@@ -1,0 +1,2547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrandToPost — Visual-First Adaptive Onboarding</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FBFBF8',
+            surface: '#F3F2EC',
+            ink: '#121210',
+            inkSoft: '#57564F',
+            muted: '#828076',
+            rule: '#E4E2DA',
+            cobalt: '#134E8E',
+            linkedin: '#0A66C2',
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- GSAP 3 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --brand-primary: #134E8E;
+    }
+
+    body {
+      background-color: #FBFBF8;
+      color: #121210;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .serif-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-variant-numeric: lining-nums;
+      font-feature-settings: "lnum" 1;
+    }
+
+    .step-panel {
+      display: none;
+    }
+    .step-panel.active {
+      display: block;
+    }
+
+    .tap-card {
+      transition: all 0.16s ease;
+    }
+    .tap-card:hover {
+      border-color: #9E9B90;
+    }
+    .tap-card.selected {
+      background-color: #121210;
+      color: #FBFBF8;
+      border-color: #121210;
+    }
+    .tap-card.selected .sub {
+      color: #D6D4CC;
+    }
+    .tap-card.selected .creator-pill-meta {
+      background-color: rgba(255, 255, 255, 0.14);
+      color: #FBFBF8;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .tap-card.selected .creator-dna-box {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #E7E5DC;
+    }
+
+    .tap-pill {
+      transition: all 0.16s ease;
+    }
+    .tap-pill:hover {
+      border-color: #9E9B90;
+    }
+    .tap-pill.selected {
+      background-color: #121210;
+      color: #FBFBF8;
+      border-color: #121210;
+    }
+
+    .orb-ai {
+      background: radial-gradient(circle at 32% 30%, #3B82C4 0%, #134E8E 55%, #0B2545 100%);
+      box-shadow: 0 16px 38px -10px rgba(19, 78, 142, 0.42);
+    }
+    .orb-user {
+      background: radial-gradient(circle at 32% 30%, #10B981 0%, #047857 60%, #064E3B 100%);
+      box-shadow: 0 16px 38px -10px rgba(4, 120, 87, 0.42);
+    }
+
+    .clean-input {
+      background: #FFFFFF;
+      border: 1px solid #DFDDD4;
+      transition: border-color 0.2s ease;
+    }
+    .clean-input:focus {
+      outline: none;
+      border-color: #121210;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- ==================== CLEAN UNNUMBERED TOP BAR ==================== -->
+  <header class="w-full border-b border-rule/80 bg-paper/95 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <span class="text-xs font-semibold tracking-[0.2em] uppercase text-ink">BrandToPost</span>
+        <span id="icp-header-badge" class="hidden sm:inline-block text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-surface text-inkSoft border border-rule">Founder Mode</span>
+      </div>
+
+      <!-- Smooth Unnumbered Progress Pill (Zero Step-Count Anxiety!) -->
+      <div class="flex items-center gap-3 flex-1 max-w-xs mx-4">
+        <div class="w-full h-1.5 bg-rule/70 rounded-full overflow-hidden">
+          <div id="top-progress-bar" class="h-full bg-ink rounded-full w-[18%] transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <button onclick="goToStep(9)" class="text-xs text-muted hover:text-ink transition-colors shrink-0">
+        Skip
+      </button>
+    </div>
+
+    <!-- PERSISTENT LIVE BACKGROUND FETCH TICKER (Runs while user taps through Voice, Visuals & Interview) -->
+    <div id="fetch-ticker-bar" class="hidden border-t border-rule/80 bg-surface/90">
+      <div class="max-w-5xl mx-auto px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span id="ticker-dot" class="w-2 h-2 rounded-full bg-cobalt animate-pulse"></span>
+          <span id="ticker-main-text" class="font-medium text-ink">Starting background sync...</span>
+          <span id="ticker-pct" class="text-[11px] font-mono text-cobalt font-semibold">25%</span>
+        </div>
+        <div id="ticker-milestones" class="flex items-center gap-3.5 text-[11px] text-muted"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN STAGE ==================== -->
+  <main class="flex-1 flex items-center justify-center px-6 py-5">
+    <div class="w-full max-w-5xl">
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 1: INSTANT ICP TAP (Zero Numbers, Zero Login Friction)   -->
+      <!-- =============================================================== -->
+      <section id="step-1" class="step-panel active max-w-2xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Let’s Personalize Your Workspace</span>
+          <h1 class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            Who are you on LinkedIn?
+          </h1>
+          <p class="text-sm text-inkSoft">
+            Everything we ask next adapts immediately to the path you pick.
+          </p>
+        </div>
+
+        <div class="anim grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
+          <button type="button" data-icp="founder" onclick="selectICP('founder', this)" class="tap-card icp-card selected text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">Founder / Business Owner</div>
+            <div class="sub text-xs text-muted mt-0.5">Building a product or company</div>
+          </button>
+
+          <button type="button" data-icp="freelancer" onclick="selectICP('freelancer', this)" class="tap-card icp-card text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">Freelancer / Consultant</div>
+            <div class="sub text-xs text-muted mt-0.5">Landing high-ticket clients &amp; retainers</div>
+          </button>
+
+          <button type="button" data-icp="ghostwriter" onclick="selectICP('ghostwriter', this)" class="tap-card icp-card text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">Ghostwriter / Agency</div>
+            <div class="sub text-xs text-muted mt-0.5">Writing for founders, execs &amp; clients</div>
+          </button>
+
+          <button type="button" data-icp="job_aspirant" onclick="selectICP('job_aspirant', this)" class="tap-card icp-card text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">Job Aspirant / Career Growth</div>
+            <div class="sub text-xs text-muted mt-0.5">Standing out to recruiters &amp; hiring managers</div>
+          </button>
+
+          <button type="button" data-icp="influencer" onclick="selectICP('influencer', this)" class="tap-card icp-card text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">LinkedIn Influencer / Creator</div>
+            <div class="sub text-xs text-muted mt-0.5">Growing audience, reach &amp; sponsorships</div>
+          </button>
+
+          <button type="button" data-icp="executive" onclick="selectICP('executive', this)" class="tap-card icp-card text-left px-4 py-3 rounded-xl border border-rule bg-white">
+            <div class="text-sm font-semibold">Executive / Operator</div>
+            <div class="sub text-xs text-muted mt-0.5">Sharing leadership &amp; industry lessons</div>
+          </button>
+        </div>
+
+        <div class="anim mb-3">
+          <button type="button" data-icp="custom" onclick="selectICP('custom', this)" class="tap-card icp-card w-full text-left px-4 py-2.5 rounded-xl border border-dashed border-muted/60 bg-paper flex items-center justify-between">
+            <div>
+              <span class="text-sm font-semibold">+ Something else...</span>
+              <span class="sub text-xs text-muted ml-2">Write your own role</span>
+            </div>
+            <span class="sub text-xs text-muted">Custom</span>
+          </button>
+        </div>
+
+        <div id="custom-icp-wrap" class="hidden mb-3">
+          <input
+            id="custom-icp-input"
+            type="text"
+            oninput="state.customRole = this.value.trim() || 'Independent Creator'"
+            placeholder="Type your exact role (e.g., Indie Game Dev, Medical Researcher, Fractional CFO)..."
+            class="clean-input w-full rounded-xl px-4 py-2.5 text-sm text-ink"
+          />
+        </div>
+
+        <div class="anim mt-5 flex justify-end">
+          <button onclick="goToStep(2)" class="w-full sm:w-auto px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Next →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 2: DYNAMIC ENDGAME GOALS                                 -->
+      <!-- =============================================================== -->
+      <section id="step-2" class="step-panel max-w-2xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span id="step2-kicker" class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Your Endgame</span>
+          <h2 id="step2-heading" class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            Be honest—what do you actually want from LinkedIn?
+          </h2>
+          <p class="text-sm text-inkSoft">
+            Tap 1 or 2 outcomes that matter most right now.
+          </p>
+        </div>
+
+        <div id="goals-grid" class="anim grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3"></div>
+
+        <div class="anim mb-5">
+          <button type="button" onclick="toggleCustomBox('custom-goal-box', 'custom-goal-input')" class="text-xs font-medium text-cobalt hover:underline underline-offset-4">
+            + Add your own goal...
+          </button>
+          <div id="custom-goal-box" class="hidden mt-2 flex gap-2">
+            <input id="custom-goal-input" type="text" placeholder="Type your custom goal..." class="clean-input flex-1 rounded-xl px-3.5 py-2 text-xs text-ink" />
+            <button type="button" onclick="addCustomGoal()" class="px-4 py-2 bg-ink text-paper text-xs font-medium rounded-xl">Add</button>
+          </div>
+        </div>
+
+        <div class="anim flex items-center justify-between">
+          <button onclick="goToStep(1)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="goToStep(3)" class="px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Next →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 3: 1-CLICK LINKEDIN CONNECT (Starts Background Scrape!)  -->
+      <!-- =============================================================== -->
+      <section id="step-3" class="step-panel max-w-xl mx-auto">
+        <div class="anim flex justify-center mb-3">
+          <span class="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+            ✓ Path locked — now let’s study your real LinkedIn voice
+          </span>
+        </div>
+
+        <div class="anim text-center mb-6">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Automatic Voice Sync</span>
+          <h2 class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-2">
+            Connect LinkedIn in one click.
+          </h2>
+          <p class="text-sm text-inkSoft max-w-md mx-auto">
+            No hunting for your profile URL. We study your past posts and match top creators in your space quietly in the background while you pick your tone and visuals.
+          </p>
+        </div>
+
+        <div class="anim bg-white border border-rule rounded-2xl p-7 text-center max-w-md mx-auto space-y-4">
+          <button
+            id="linkedin-connect-btn"
+            onclick="triggerLinkedInConnect()"
+            class="w-full py-4 px-5 bg-linkedin hover:bg-cobalt text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm"
+          >
+            <span class="w-6 h-6 rounded bg-white text-linkedin font-bold text-xs flex items-center justify-center">in</span>
+            <span id="linkedin-btn-label">Connect LinkedIn in 1 Click</span>
+          </button>
+
+          <div id="linkedin-fetching-card" class="hidden items-center justify-between p-4 rounded-xl bg-surface border border-rule text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-ink text-paper text-xs font-semibold flex items-center justify-center">AF</div>
+              <div>
+                <div class="text-xs font-semibold text-ink">Arjun · LinkedIn Connected</div>
+                <div class="text-xs text-cobalt flex items-center gap-1.5 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cobalt animate-pulse"></span>
+                  Reading 34 past posts &amp; matching top industry creators...
+                </div>
+              </div>
+            </div>
+            <span class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">Syncing</span>
+          </div>
+
+          <div class="pt-1">
+            <button onclick="goToStep(4)" class="text-xs text-muted hover:text-ink underline underline-offset-4">
+              Skip LinkedIn connect for now →
+            </button>
+          </div>
+        </div>
+
+        <div class="anim mt-7 flex items-center justify-between max-w-md mx-auto">
+          <button onclick="goToStep(2)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="goToStep(4)" class="px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Continue →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 4: WEBSITE SCAN VS PERSONAL BRAND ONLY                   -->
+      <!-- =============================================================== -->
+      <section id="step-4" class="step-panel max-w-xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Brand Scope</span>
+          <h2 id="step4-heading" class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1.5">
+            Are you promoting a company or product too?
+          </h2>
+          <p id="step4-sub" class="text-sm text-inkSoft">
+            If yes, we grab your website colors, logo, and offer in the background.
+          </p>
+        </div>
+
+        <div class="anim grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <button type="button" id="brand-yes-tab" onclick="setWebsiteMode(true)" class="tap-card selected text-left p-4 rounded-2xl border border-rule bg-white">
+            <div id="brand-yes-title" class="text-sm font-semibold">Yes — scan my company site</div>
+            <div id="brand-yes-sub" class="sub text-xs text-muted mt-0.5">Grab colors, logo &amp; offer via Firecrawl</div>
+          </button>
+          <button type="button" id="brand-no-tab" onclick="setWebsiteMode(false)" class="tap-card text-left p-4 rounded-2xl border border-rule bg-white">
+            <div class="text-sm font-semibold">No — personal brand only</div>
+            <div class="sub text-xs text-muted mt-0.5">Skip website &amp; product questions completely</div>
+          </button>
+        </div>
+
+        <div id="website-panel" class="anim bg-white border border-rule rounded-2xl p-5 mb-5">
+          <label class="block text-xs font-medium text-ink mb-1.5">Website or Portfolio URL</label>
+          <input
+            id="company-url-input"
+            type="url"
+            value="https://brandtopost.com"
+            placeholder="https://yourcompany.com"
+            class="clean-input w-full rounded-xl px-4 py-3 text-sm text-ink"
+          />
+          <p class="text-[11px] text-muted mt-2">
+            Runs silently in the background while you pick your tone &amp; visual style.
+          </p>
+        </div>
+
+        <div id="personal-only-note" class="hidden anim bg-surface/80 border border-rule rounded-2xl p-5 mb-5 text-center">
+          <div class="text-xs font-semibold text-ink mb-1">Pure Personal Brand Mode Active</div>
+          <p class="text-xs text-inkSoft leading-relaxed">
+            Zero website or product pitch clutter—100% focused on your personal voice and visuals.
+          </p>
+        </div>
+
+        <div class="anim flex items-center justify-between">
+          <button onclick="goToStep(3)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="startScanAndAdvance()" class="px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            <span id="step4-cta-label">Start Scan &amp; Continue →</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 5: PERSONALITY & ANTI-CRINGE GUARDRAILS                  -->
+      <!-- =============================================================== -->
+      <section id="step-5" class="step-panel max-w-2xl mx-auto">
+        <div class="anim text-center mb-4">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Voice &amp; Guardrails</span>
+          <h2 class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            How do you talk—and what makes you cringe?
+          </h2>
+        </div>
+
+        <div id="vibes-grid" class="anim grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3"></div>
+
+        <div id="custom-vibe-box" class="hidden mb-3 flex gap-2">
+          <input id="custom-vibe-input" type="text" placeholder="e.g., Nerdy builder who hates fluff and loves real data" class="clean-input flex-1 rounded-xl px-3.5 py-2 text-xs text-ink" />
+          <button type="button" onclick="saveCustomVibe()" class="px-4 py-2 bg-ink text-paper text-xs font-medium rounded-xl">Use This</button>
+        </div>
+
+        <div class="anim bg-white border border-rule rounded-2xl p-3.5 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-muted">Block these forever (“✕ Not For” rules)</span>
+            <button type="button" onclick="toggleCustomBox('custom-peeve-box', 'custom-peeve-input')" class="text-[11px] font-medium text-cobalt hover:underline">
+              + Add pet peeve
+            </button>
+          </div>
+          <div id="peeve-pills" class="flex flex-wrap gap-1.5"></div>
+          <div id="custom-peeve-box" class="hidden mt-2 flex gap-2">
+            <input id="custom-peeve-input" type="text" placeholder="e.g., Never start with 'I’m thrilled to share'" class="clean-input flex-1 rounded-xl px-3 py-1.5 text-xs text-ink" />
+            <button type="button" onclick="addCustomPeeve()" class="px-3.5 py-1.5 bg-ink text-paper text-xs font-medium rounded-xl">Add</button>
+          </div>
+        </div>
+
+        <div class="anim flex items-center justify-between">
+          <button onclick="goToStep(4)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="goToStep(6)" class="px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Next →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 6: VISUAL & IMAGE TASTE PICKER (Crucial for LinkedIn!)   -->
+      <!-- =============================================================== -->
+      <section id="step-6" class="step-panel max-w-2xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">Visual Taste · Every Post Needs Strong Media</span>
+          <h2 class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            What kind of LinkedIn visuals fit your style?
+          </h2>
+          <p class="text-sm text-inkSoft">
+            Text alone gets ignored on LinkedIn. Pick 1 or 2 visual styles so we generate graphics with every post.
+          </p>
+        </div>
+
+        <!-- 4 Visual Format Cards with Mini Graphic Previews -->
+        <div class="anim grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <button type="button" data-vis="Editorial Carousels" onclick="toggleVisualCard(this, 'Editorial Carousels')" class="tap-card vis-card selected text-left p-4 rounded-2xl border border-rule bg-white flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl shrink-0 flex flex-col justify-between p-2 text-white" style="background-color: var(--brand-primary);">
+              <span class="text-[7px] uppercase tracking-wider opacity-75">01/05</span>
+              <span class="serif-heading text-xs leading-none">Aa</span>
+            </div>
+            <div>
+              <div class="text-sm font-semibold">Editorial PDF Carousels</div>
+              <div class="sub text-xs text-muted mt-0.5">Clean swipeable slides in your brand colors</div>
+            </div>
+          </button>
+
+          <button type="button" data-vis="Infographic Cheat-Sheets" onclick="toggleVisualCard(this, 'Infographic Cheat-Sheets')" class="tap-card vis-card selected text-left p-4 rounded-2xl border border-rule bg-white flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl shrink-0 bg-surface border border-rule p-1.5 grid grid-cols-2 gap-1">
+              <div class="rounded bg-ink/15"></div>
+              <div class="rounded bg-cobalt/30"></div>
+              <div class="rounded bg-cobalt/30"></div>
+              <div class="rounded bg-ink/15"></div>
+            </div>
+            <div>
+              <div class="text-sm font-semibold">Framework &amp; Comparison Cards</div>
+              <div class="sub text-xs text-muted mt-0.5">Before vs. After tables, systems &amp; diagrams</div>
+            </div>
+          </button>
+
+          <button type="button" data-vis="Quote / X-Style Cards" onclick="toggleVisualCard(this, 'Quote / X-Style Cards')" class="tap-card vis-card selected text-left p-4 rounded-2xl border border-rule bg-white flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl shrink-0 bg-ink text-paper p-2 flex flex-col justify-between">
+              <div class="w-3 h-1 rounded bg-paper/40"></div>
+              <div class="text-[8px] leading-tight font-medium">“Bold take.”</div>
+            </div>
+            <div>
+              <div class="text-sm font-semibold">Punchy Quote / X-Cards</div>
+              <div class="sub text-xs text-muted mt-0.5">High-contrast callout cards that stop the scroll</div>
+            </div>
+          </button>
+
+          <button type="button" data-vis="Founder Photo + Caption Stamp" onclick="toggleVisualCard(this, 'Founder Photo + Caption Stamp')" class="tap-card vis-card text-left p-4 rounded-2xl border border-rule bg-white flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-xl shrink-0 bg-amber-100 border border-amber-300/60 flex items-end p-1.5">
+              <span class="w-full py-0.5 rounded bg-ink text-paper text-[7px] text-center font-medium">STORY</span>
+            </div>
+            <div>
+              <div class="text-sm font-semibold">Candid Photo + Headline Card</div>
+              <div class="sub text-xs text-muted mt-0.5">Real workspace/founder snapshots with clean overlays</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Visual Backdrop Mood -->
+        <div class="anim bg-white border border-rule rounded-2xl p-4 mb-5 flex flex-wrap items-center justify-between gap-3">
+          <span class="text-xs font-medium text-muted">Visual Theme Mood</span>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="selectVisualTheme('Bold Brand Color', this)" class="tap-pill theme-pill selected px-3.5 py-1.5 text-xs font-medium rounded-full border border-rule bg-paper">
+              Bold Brand Color
+            </button>
+            <button type="button" onclick="selectVisualTheme('Light Editorial Paper', this)" class="tap-pill theme-pill px-3.5 py-1.5 text-xs font-medium rounded-full border border-rule bg-paper">
+              Light Editorial Paper
+            </button>
+            <button type="button" onclick="selectVisualTheme('Dark Minimal Obsidian', this)" class="tap-pill theme-pill px-3.5 py-1.5 text-xs font-medium rounded-full border border-rule bg-paper">
+              Dark Minimal Obsidian
+            </button>
+          </div>
+        </div>
+
+        <div class="anim flex items-center justify-between">
+          <button onclick="goToStep(5)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="goToStep(7)" class="px-8 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Quick 30s Voice Kickoff →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 7: 30-SEC AI GHOSTWRITER INTERVIEW                       -->
+      <!-- =============================================================== -->
+      <section id="step-7" class="step-panel max-w-2xl mx-auto">
+        <div class="anim text-center mb-4">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-cobalt">30-Second AI Ghostwriter</span>
+          <h2 class="serif-heading text-3xl sm:text-[38px] leading-tight font-medium text-ink mt-1 mb-1">
+            Let’s pull out one real story while your scan wraps up.
+          </h2>
+          <p class="text-xs sm:text-sm text-inkSoft max-w-lg mx-auto">
+            Talk for 25 seconds (or tap a thought below) so your fetched profile, visual style, and real story come together.
+          </p>
+        </div>
+
+        <div class="anim bg-white border border-rule rounded-2xl p-5 space-y-4">
+          <div id="chat-feed" class="space-y-2.5 max-h-[190px] overflow-y-auto pr-1">
+            <div class="flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-cobalt text-paper text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                AI
+              </div>
+              <div id="ai-turn1-text" class="bg-surface rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-xs sm:text-[13px] text-ink leading-relaxed"></div>
+            </div>
+
+            <div id="user-bubble-1" class="hidden flex items-start justify-end gap-2">
+              <div id="user-text-1" class="bg-ink text-paper rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed max-w-md"></div>
+            </div>
+
+            <div id="ai-bubble-2" class="hidden flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-cobalt text-paper text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                AI
+              </div>
+              <div id="ai-turn2-text" class="bg-surface rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-xs sm:text-[13px] text-ink leading-relaxed"></div>
+            </div>
+
+            <div id="user-bubble-2" class="hidden flex items-start justify-end gap-2">
+              <div id="user-text-2" class="bg-ink text-paper rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed max-w-md"></div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-rule flex flex-col items-center">
+            <div class="relative flex items-center justify-center w-24 h-24 mb-1.5 cursor-pointer" onclick="triggerInterviewTurn()">
+              <div id="orb-ring" class="absolute inset-0 rounded-full border border-cobalt/25"></div>
+              <div id="orb-main" class="orb-ai relative w-20 h-20 rounded-full flex flex-col items-center justify-center text-center text-paper transition-all">
+                <div class="flex items-center gap-1 h-3.5">
+                  <span class="vbar w-1 h-2 bg-paper/90 rounded-full"></span>
+                  <span class="vbar w-1 h-3.5 bg-paper rounded-full"></span>
+                  <span class="vbar w-1 h-3.5 bg-paper rounded-full"></span>
+                  <span class="vbar w-1 h-2.5 bg-paper/90 rounded-full"></span>
+                </div>
+                <span id="orb-action-label" class="text-[9px] tracking-widest uppercase mt-1">Tap to Talk</span>
+              </div>
+            </div>
+            <p id="orb-helper" class="text-[11px] text-muted text-center">
+              Speak for 25 seconds — your AI Ghostwriter will ask 1 smart follow-up.
+            </p>
+
+            <div id="quick-answer-pills" class="mt-3 w-full"></div>
+          </div>
+        </div>
+
+        <div class="anim mt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-4">
+            <button onclick="goToStep(6)" class="text-xs text-muted hover:text-ink">← Back</button>
+            <button onclick="goToStep(8)" class="text-xs font-medium text-inkSoft hover:text-ink underline underline-offset-4">
+              Skip Voice → Combine My Profile
+            </button>
+          </div>
+          <button onclick="goToStep(8)" class="w-full sm:w-auto px-6 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Bring Everything Together →
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 8: EVERYTHING COMES TOGETHER (LinkedIn+Site+Voice+Visual)-->
+      <!-- =============================================================== -->
+      <section id="step-8" class="step-panel max-w-4xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-800">✓ Everything Synced &amp; Combined</span>
+          <h2 id="step8-heading" class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            Your complete Brand Brain is ready.
+          </h2>
+          <p class="text-sm text-inkSoft">
+            Your LinkedIn voice, brand colors, visual style, and spoken story—all locked in one place. Click anything to tweak.
+          </p>
+        </div>
+
+        <!-- 2x2 Unified Synthesis Grid (All 4 Pillars Coming Together!) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- Pillar 1: LinkedIn Profile + Voice Taps -->
+          <div class="anim bg-white border border-rule rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between pb-2 border-b border-rule">
+              <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800">1 · LinkedIn Voice &amp; Guardrails</span>
+              <span id="proof-li-title" class="text-[11px] font-medium text-ink">34 past posts analyzed ✓</span>
+            </div>
+            <div class="text-xs">
+              <div class="text-[10px] uppercase tracking-wider text-muted mb-0.5">Path &amp; Personality</div>
+              <p id="proof-role-vibe" contenteditable="true" class="text-ink font-semibold focus:outline-none"></p>
+            </div>
+            <div id="proof-notfor-list" class="flex flex-wrap gap-1.5 pt-1"></div>
+          </div>
+
+          <!-- Pillar 2: Fetched Website Brand Kit OR Personal Brand Focus -->
+          <div class="anim bg-white border border-rule rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between pb-2 border-b border-rule">
+              <span id="proof-left-kicker" class="text-[10px] font-semibold uppercase tracking-[0.16em] text-cobalt">2 · Fetched Website Brand Kit</span>
+              <span id="proof-site-title" class="text-[11px] font-medium text-ink">brandtopost.com ✓</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div id="proof-logo-badge" class="w-8 h-8 rounded-lg text-paper font-serif text-sm font-semibold flex items-center justify-center transition-colors" style="background-color: var(--brand-primary);">
+                  B
+                </div>
+                <div class="text-xs">
+                  <div id="proof-color-title" class="font-medium text-ink">Brand Palette</div>
+                  <div id="proof-hex-label" class="font-mono text-[11px] text-muted">#134E8E</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="pickColor('#134E8E', this)" class="swatch w-6 h-6 rounded-full ring-2 ring-offset-1 ring-ink" style="background:#134E8E"></button>
+                <button type="button" onclick="pickColor('#1B4332', this)" class="swatch w-6 h-6 rounded-full" style="background:#1B4332"></button>
+                <button type="button" onclick="pickColor('#9A3412', this)" class="swatch w-6 h-6 rounded-full" style="background:#9A3412"></button>
+                <button type="button" onclick="pickColor('#18181B', this)" class="swatch w-6 h-6 rounded-full" style="background:#18181B"></button>
+              </div>
+            </div>
+            <div class="text-xs pt-0.5">
+              <div id="proof-box1-label" class="text-[10px] uppercase tracking-wider text-muted mb-0.5">Core Offer / Focus</div>
+              <p id="proof-box1-text" contenteditable="true" class="text-ink leading-snug focus:outline-none"></p>
+            </div>
+          </div>
+
+          <!-- Pillar 3: Spoken Interview Story & Proof -->
+          <div class="anim bg-white border border-rule rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between pb-2 border-b border-rule">
+              <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-cobalt">3 · Captured From Voice Interview</span>
+              <span class="text-[11px] font-medium text-emerald-800">✓ Grounded in Your Words</span>
+            </div>
+            <div class="text-xs">
+              <div class="text-[10px] uppercase tracking-wider text-muted mb-0.5">Core Take &amp; Real Proof</div>
+              <p id="proof-voice-take" contenteditable="true" class="text-ink leading-relaxed italic focus:outline-none"></p>
+            </div>
+          </div>
+
+          <!-- Pillar 4: Locked Visual & Image Engine -->
+          <div class="anim bg-white border border-rule rounded-2xl p-4 space-y-2">
+            <div class="flex items-center justify-between pb-2 border-b border-rule">
+              <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-800">4 · Visual &amp; Image Engine</span>
+              <span id="proof-theme-badge" class="text-[11px] font-medium text-ink">Bold Brand Color ✓</span>
+            </div>
+            <div class="text-xs">
+              <div class="text-[10px] uppercase tracking-wider text-muted mb-1">Selected LinkedIn Image Formats</div>
+              <div id="proof-visual-pills" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MINIMAL VOICE PICKER: My Own Voice (Default) + 4 Matched Creators with DP -->
+        <div class="anim mt-3.5 bg-white border border-rule rounded-2xl p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-cobalt">Writing Voice</span>
+              <div id="step8-creator-heading" class="text-xs text-inkSoft mt-0.5">
+                Use your own voice, or try a top creator in your space
+              </div>
+            </div>
+            <button
+              id="step8-own-voice-btn"
+              type="button"
+              onclick="selectVoiceStyle('own')"
+              class="tap-pill selected flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-rule bg-paper text-xs font-medium"
+            >
+              <span class="w-5 h-5 rounded-full bg-cobalt text-white text-[9px] font-semibold flex items-center justify-center">ME</span>
+              <span id="step8-own-voice-label">My own voice</span>
+            </button>
+          </div>
+
+          <!-- Clean 4-Creator DP Row -->
+          <div id="step8-creator-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
+        </div>
+
+        <div class="anim mt-5 flex items-center justify-between">
+          <button onclick="goToStep(7)" class="text-xs text-muted hover:text-ink">← Back</button>
+          <button onclick="goToStep(9)" class="px-8 py-3.5 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            <span id="step8-generate-cta">Generate My First 3 Posts + Visuals →</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- =============================================================== -->
+      <!-- SCREEN 9: FIRST 3 POSTS — EVERY POST HAS TEXT + GENERATED IMAGE -->
+      <!-- =============================================================== -->
+      <section id="step-9" class="step-panel max-w-5xl mx-auto">
+        <div class="anim text-center mb-5">
+          <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-800">
+            ✓ Complete Posts + LinkedIn Visuals Ready
+          </span>
+          <h2 class="serif-heading text-4xl sm:text-[42px] leading-tight font-medium text-ink mt-1 mb-1">
+            Pick a post + visual to publish.
+          </h2>
+          <p class="text-sm text-inkSoft">
+            <span id="step9-sub">Every post comes paired with a ready-to-post LinkedIn visual in your brand style.</span>
+            <button type="button" onclick="goToStep(8)" class="ml-1.5 text-xs text-cobalt hover:underline underline-offset-4">
+              Change voice
+            </button>
+          </p>
+        </div>
+
+        <!-- Dynamically Populated: 3 Cards in the Selected Voice + Matching Visual Graphic! -->
+        <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+        <div class="anim mt-6 flex flex-wrap items-center justify-between gap-3">
+          <a href="/" class="text-xs text-muted hover:text-ink transition-colors">← Demo Home</a>
+          <a href="/workspace" class="px-7 py-3 bg-ink hover:bg-cobalt text-paper text-sm font-medium rounded-xl transition-colors">
+            Enter BrandToPost Workspace →
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== FOOTER + SUBTLE DEV JUMP BAR ==================== -->
+  <footer class="w-full py-3 px-6 border-t border-rule/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted max-w-5xl mx-auto">
+    <div class="flex items-center gap-3">
+      <a href="/" class="hover:text-ink transition-colors">BrandToPost · Zero-Step-Number Onboarding</a>
+      <span class="text-rule">|</span>
+      <a href="/workspace" class="font-medium text-cobalt hover:underline">Open Workspace →</a>
+    </div>
+    <!-- Subtle Dev Tester Bar (for prototyping only; remove in production) -->
+    <div class="flex items-center gap-1.5 text-[10px]">
+      <span class="text-muted/70">Dev Jump:</span>
+      <button onclick="goToStep(1)" class="hover:text-ink underline">ICP</button>·
+      <button onclick="goToStep(2)" class="hover:text-ink underline">Goal</button>·
+      <button onclick="goToStep(3)" class="hover:text-ink underline">LinkedIn</button>·
+      <button onclick="goToStep(4)" class="hover:text-ink underline">Site</button>·
+      <button onclick="goToStep(5)" class="hover:text-ink underline">Vibe</button>·
+      <button onclick="goToStep(6)" class="hover:text-ink underline">Visuals</button>·
+      <button onclick="goToStep(7)" class="hover:text-ink underline">Voice</button>·
+      <button onclick="goToStep(8)" class="hover:text-ink underline">Brain</button>·
+      <button onclick="goToStep(9)" class="hover:text-ink underline">Posts+Images</button>
+    </div>
+  </footer>
+
+  <!-- ==================== TOAST ==================== -->
+  <div id="toast" class="pointer-events-none fixed bottom-5 right-5 z-50 opacity-0 bg-ink text-paper text-xs px-4 py-2.5 rounded-lg shadow-md"></div>
+
+  <!-- ==================== ICP CONFIGURATION & DYNAMIC LOGIC ==================== -->
+  <script>
+    const ICP_CONFIG = {
+      founder: {
+        badge: 'Founder Mode',
+        label: 'Founder / Business Owner',
+        defaultWebsite: true,
+        sitePlaceholder: 'https://brandtopost.com',
+        step4Heading: 'Are you promoting a company or product too?',
+        step4Sub: 'If yes, Firecrawl scans your site in the background while you pick your tone & visual style.',
+        yesTitle: 'Yes — scan my company site',
+        yesSub: 'Grab colors, logo & product offer via Firecrawl',
+        goalsWebsite: [
+          'Signups & users for my product',
+          'Inbound customers in my DMs',
+          'Be the #1 voice in my category',
+          'Attract A-player engineers & hires',
+          'Get on investors’ & partners’ radar',
+          'Turn my team into a growth channel',
+        ],
+        goalsPersonal: [
+          'Build personal authority in my industry',
+          'Attract high-level founder & exec DMs',
+          'Share honest behind-the-scenes lessons',
+          'Get invited to podcasts & stages',
+          'Create long-term career leverage',
+          'Network with top builders & peers',
+        ],
+        vibes: [
+          { title: 'Blunt & No-BS', quote: '“Skip the intro. Here’s what actually happened.”' },
+          { title: 'Contrarian Challenger', quote: '“Everyone in our industry preaches X. They’re wrong.”' },
+          { title: 'Transparent Builder', quote: '“Here’s what we shipped, what broke, and real numbers.”' },
+          { title: 'Tactical Playbook', quote: '“Steal the exact 4-step system we used.”' },
+          { title: 'Story-First Human', quote: '“Last Tuesday a customer told me something painful...”' },
+          { title: 'Sharp & Witty', quote: '“Dry humor, honest observations, zero corporate stiffs.”' },
+        ],
+        peeves: [
+          '✕ AI words (“Delve”, “Thrilled”, “Tapestry”)',
+          '✕ Emojis on every line',
+          '✕ Fake humble-brags',
+          '✕ Cringe motivational quotes',
+          '✕ Pushy sales pitches',
+          '✕ Wall-of-text paragraphs',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what’s one popular advice in your space that you completely disagree with right now?',
+          a1: '“Everyone tells founders to post daily AI templates, but buyers spot robotic copy in two seconds.”',
+          q2: 'Love that take. Give me one quick real story or number from your own work that proves it?',
+          a2: '“Last month a founder recorded a 2-minute voice rant right after a call and booked 6 inbound demos that week.”',
+          pills1: [
+            '“Everyone preaches daily AI templates—it kills buyer trust.”',
+            '“Founders chase vanity likes instead of posts that convert buyers.”',
+          ],
+          pills2: [
+            '“A 2-min voice rant after a call booked 6 demos.”',
+            '“Tested 20 accounts: honest stories got 4x more replies.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Contrarian Take + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Buyers smell generic AI copy in 2 seconds. Two real spoken stories beat 30 templates.”',
+            lines: [
+              'Everyone tells founders to post daily AI templates.',
+              'We tested it with 20 founders. Reach did not grow. It dropped.',
+              'Two honest stories pulled from real work beat 30 templates every time.',
+            ],
+          },
+          {
+            tag: '02 · Product Story + Comparison Graphic',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Blank Prompt Box',
+            compLeftStat: '45 min editing robotic fluff',
+            compRightTitle: '2-Min Voice Rant',
+            compRightStat: '6 inbound demos in 7 days',
+            lines: [
+              'Last month a founder recorded a 2-minute voice rant right after a call.',
+              'Zero polish. Zero hashtags.',
+              'It booked 6 inbound demos that week. That is why we built BrandToPost around talking first.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Industry Hot Take + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Quality beats daily frequency on LinkedIn by 10x.”',
+            lines: [
+              'Everyone tells builders to post every single morning.',
+              'Quality beats frequency on LinkedIn by 10x.',
+              'Two honest stories pulled from real work build more trust than 30 safe templates.',
+            ],
+          },
+          {
+            tag: '02 · Operator Story + Comparison Card',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Polished PR Post',
+            compLeftStat: '12 likes, 0 real DMs',
+            compRightTitle: '2-Min Call Lesson',
+            compRightStat: '4x replies from peers',
+            lines: [
+              'The best post I ever shared came from a messy 2-minute voice note right after a tough call.',
+              'People do not follow polished logos. They follow real operators thinking out loud.',
+            ],
+          },
+        ],
+        carouselHook: 'How to turn one 2-minute voice note into a week of LinkedIn authority (swipe through the 5-step system):',
+        carouselSlides: [
+          'Why 2 spoken stories beat 30 AI templates.',
+          'Step 1: Record a 2-min voice note right after a real call.',
+          'Step 2: Strip the filler words, keep your sharp opinions.',
+          'Step 3: Pair every post with a clean brand visual.',
+          'Recap: Talk first. Never start from a blank box.',
+        ],
+      },
+
+      freelancer: {
+        badge: 'Freelancer Mode',
+        label: 'Freelancer / Consultant',
+        defaultWebsite: true,
+        sitePlaceholder: 'https://yourportfolio.com',
+        step4Heading: 'Do you have a portfolio or service site to scan?',
+        step4Sub: 'We can scan your portfolio for services & brand colors while you pick your visual style.',
+        yesTitle: 'Yes — scan my portfolio site',
+        yesSub: 'Pull services, client proof & colors via Firecrawl',
+        goalsWebsite: [
+          'Get qualified client leads in my DMs',
+          'Charge higher rates with authority',
+          'Turn client wins into subtle case studies',
+          'Stay booked out without cold pitching',
+          'Attract long-term retainer clients',
+          'Become the go-to specialist in my niche',
+        ],
+        goalsPersonal: [
+          'Get qualified client leads in my DMs',
+          'Charge higher rates with authority',
+          'Share behind-the-scenes client lessons',
+          'Stay top-of-mind with past buyers',
+          'Attract warm referrals effortlessly',
+          'Stop relying on cold outreach',
+        ],
+        vibes: [
+          { title: 'Client-Win Storyteller', quote: '“Here’s how we fixed a client’s bottleneck in 14 days.”' },
+          { title: 'Blunt & No-BS', quote: '“Skip the fluff. Here’s why most retainers fail.”' },
+          { title: 'Tactical Specialist', quote: '“Steal the exact audit checklist I use on day one.”' },
+          { title: 'Transparent Consultant', quote: '“A weird project mistake that cost me $4K—and the fix.”' },
+          { title: 'Contrarian Expert', quote: '“Why I tell 50% of leads NOT to hire me yet.”' },
+          { title: 'Proof-Backed Authority', quote: '“Before/after numbers from a recent engagement.”' },
+        ],
+        peeves: [
+          '✕ Sleazy "DM me READY" pitches',
+          '✕ Fake income screenshots',
+          '✕ AI words (“Delve”, “Thrilled”)',
+          '✕ Emojis on every line',
+          '✕ Humble-brag client stories',
+          '✕ Wall-of-text paragraphs',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is the #1 expensive mistake clients keep making right before they hire someone like you?',
+          a1: '“Most companies waste 3 months rebuilding their whole homepage before fixing their offer clarity.”',
+          q2: 'Smart angle. Give me one quick before-and-after win you delivered without naming the client?',
+          a2: '“We rewrote just 4 sections for a B2B SaaS client last month and their demo conversions jumped 38% in 2 weeks.”',
+          pills1: [
+            '“Clients obsess over redesigns before fixing offer clarity.”',
+            '“Most teams hire too late after burning budget on ads.”',
+          ],
+          pills2: [
+            '“Rewrote 4 sections and lifted demo conversion 38% in 14 days.”',
+            '“Cut a client’s onboarding time in half in one weekend.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Client Mistake + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Don’t spend 3 months redesigning your site when your offer clarity is broken.”',
+            lines: [
+              'Most B2B teams waste 3 months redesigning their site before fixing offer clarity.',
+              'We rewrote just 4 sections around buyer pain instead. Demo bookings jumped 38% in two weeks.',
+            ],
+          },
+          {
+            tag: '02 · Case Study + Before/After Visual',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Full 90-Day Redesign',
+            compLeftStat: '$25K spent · same conversion',
+            compRightTitle: '4-Section Offer Fix',
+            compRightStat: '+38% demo bookings in 14d',
+            lines: [
+              'You rarely have a traffic problem. You have a trust gap on page one.',
+              'When buyers see real proof instead of vague promises, sales calls stop feeling like interviews.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Consultant Truth + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“90% of a consulting breakthrough happens by cutting what is broken in hour one.”',
+            lines: [
+              'Most teams hire a specialist expecting complicated new tactics.',
+              '90% of the win happens in the first hour by cutting what is broken. Clarity beats complexity.',
+            ],
+          },
+          {
+            tag: '02 · Inbound Proof + Comparison Visual',
+            visualType: 'comparison_card',
+            compLeftTitle: '100 Cold DMs Sent',
+            compLeftStat: '1 awkward price-shopper call',
+            compRightTitle: '2 Problem Breakdowns',
+            compRightStat: '3 warm inbound retainers',
+            lines: [
+              'The best client DMs I get never start from cold outreach.',
+              'They start when a buyer reads two honest breakdowns of problems you actually solved.',
+            ],
+          },
+        ],
+        carouselHook: 'The 5-point audit we used to lift a client’s demo conversions by 38% in 14 days:',
+        carouselSlides: [
+          '5 fixes that lifted client demos by 38% in 14 days.',
+          'Fix 1: Replace vague slogans with the #1 buyer pain.',
+          'Fix 2: Put real proof above the fold.',
+          'Fix 3: Cut form fields from 9 down to 3.',
+          'Want this audit for your page? DM me.',
+        ],
+      },
+
+      ghostwriter: {
+        badge: 'Ghostwriter Mode',
+        label: 'Ghostwriter / Agency',
+        defaultWebsite: true,
+        sitePlaceholder: 'https://yourwritingagency.com',
+        step4Heading: 'Do you have an agency site or portfolio to scan?',
+        step4Sub: 'Pull your agency positioning & brand look—or skip for a clean personal ghostwriter profile.',
+        yesTitle: 'Yes — scan my agency site',
+        yesSub: 'Extract agency offers, proof & brand kit',
+        goalsWebsite: [
+          'Land new $3k–$10k/mo ghostwriting clients',
+          'Capture busy CEO ideas via 2-min voice links',
+          'Write in 10 client voices without sounding samey',
+          'Send fast no-login review links for approvals',
+          'Prove client ROI with clean analytics',
+          'Scale agency output without losing quality',
+        ],
+        goalsPersonal: [
+          'Land high-paying ghostwriting retainers',
+          'Show behind-the-scenes writing teardowns',
+          'Attract founder clients directly in DMs',
+          'Build credibility without exposing NDA clients',
+          'Turn quick client calls into 5+ weekly posts',
+          'Become known as the anti-AI-slop writer',
+        ],
+        vibes: [
+          { title: 'Sharp Hook Craftsperson', quote: '“Every line earns the next line. Zero wasted words.”' },
+          { title: 'Voice Chameleon', quote: '“Sounds 100% like my client talking at dinner.”' },
+          { title: 'Anti-Slop Purist', quote: '“If it reads like ChatGPT wrote it, scrap it.”' },
+          { title: 'Teardown Strategist', quote: '“Why this 8-line founder post drove 19 inbound leads.”' },
+          { title: 'Confident Operator', quote: '“Running an editorial engine for busy CEOs.”' },
+          { title: 'Contrarian Writer', quote: '“Long hooks are fine when the tension is real.”' },
+        ],
+        peeves: [
+          '✕ Generic ChatGPT voice',
+          '✕ Emojis as bullet points',
+          '✕ Forced bro-etry line breaks',
+          '✕ Fake NDA case studies',
+          '✕ Empty hook-bait with zero value',
+          '✕ Long corporate intros',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is the #1 reason founders burn out when they try to write their own LinkedIn posts?',
+          a1: '“Founders have 10 great stories a week on sales calls, yet freeze the second they open a blank doc.”',
+          q2: 'So true. What is your #1 trick for making a client’s post sound like THEM instead of an agency template?',
+          a2: '“I jump on a 5-minute voice call and keep their exact messy slang and strong opinions intact.”',
+          pills1: [
+            '“Founders talk brilliantly on calls, then freeze on blank docs.”',
+            '“Agencies fail when every client starts sounding identical.”',
+          ],
+          pills2: [
+            '“A 5-minute client voice note gives me 4 posts with real slang.”',
+            '“I build a strict Not-For list of words each client never uses.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Ghostwriting Truth + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Founders drop gold on sales calls all day—then freeze the second they open a blank doc.”',
+            lines: [
+              'Founders drop brilliant insights on sales calls every single day.',
+              'Then they open a blank LinkedIn box and write stiff corporate mush.',
+              'The bottleneck is never thinking. It is capturing their real voice before it disappears.',
+            ],
+          },
+          {
+            tag: '02 · Agency System + Comparison Visual',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Old Agency Onboarding',
+            compLeftStat: '40-page questionnaire CEO ignores',
+            compRightTitle: '2-Min No-Login Voice Link',
+            compRightStat: '5 authentic posts in 10 minutes',
+            lines: [
+              'How we pull a full week of LinkedIn posts from a CEO who hates writing:',
+              'Text a 2-minute interview link. Grab two unscripted opinions. Keep their exact phrasing intact.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Craft Teardown + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Bad ghostwriting makes 10 founders sound like the same copywriter.”',
+            lines: [
+              'The easiest way to spot bad ghostwriting on LinkedIn:',
+              'Every client on the agency roster uses the exact same cadence and transition words.',
+              'Real authority keeps the founder’s sharpest edges intact.',
+            ],
+          },
+          {
+            tag: '02 · Voice vs Prompts + Comparison Card',
+            visualType: 'comparison_card',
+            compLeftTitle: 'ChatGPT Prompting',
+            compLeftStat: 'Generic hooks & robotic tone',
+            compRightTitle: '5-Min Voice Interview',
+            compRightStat: '96% match to founder’s real slang',
+            lines: [
+              'Prompts do not create great founder content. Conversations do.',
+              'Ask three smart follow-up questions out loud and the best hook reveals itself in seconds.',
+            ],
+          },
+        ],
+        carouselHook: 'How to pull 5 high-converting founder posts from one 5-minute voice interview:',
+        carouselSlides: [
+          'How to write 5 founder posts from one 5-min call.',
+          'Question 1: What did a customer ask you on a call this week?',
+          'Question 2: What industry advice do you disagree with?',
+          'Rule: Keep their exact spoken verbs and contractions.',
+          'Result: Zero revision rounds from busy CEOs.',
+        ],
+      },
+
+      job_aspirant: {
+        badge: 'Career / Job Seeker',
+        label: 'Job Aspirant / Career Growth',
+        defaultWebsite: false,
+        sitePlaceholder: 'https://yourportfolio.dev',
+        step4Heading: 'Do you have a personal portfolio or GitHub site to scan?',
+        step4Sub: 'Most job seekers keep this as Pure Personal Brand—no company website needed.',
+        yesTitle: 'Yes — scan my portfolio site',
+        yesSub: 'Pull my projects, bio & accent color via Firecrawl',
+        goalsWebsite: [
+          'Get recruiters & hiring managers in my DMs',
+          'Show public proof of my projects & skills',
+          'Stand out from 500 generic resume applicants',
+          'Connect with team leads at dream companies',
+          'Build a known name before I even apply',
+          'Document what I build & learn publicly',
+        ],
+        goalsPersonal: [
+          'Get recruiters & hiring managers in my DMs',
+          'Show public proof of my projects & skills',
+          'Stand out from 500 generic resume applicants',
+          'Connect with team leads at dream companies',
+          'Build a known name before I even apply',
+          'Document what I build & learn publicly',
+        ],
+        vibes: [
+          { title: 'Proof-of-Work Builder', quote: '“Here’s what I built this weekend and what broke.”' },
+          { title: 'Curious Learner', quote: '“I spent 4 hours debugging X—here is the clean fix.”' },
+          { title: 'Clear & Practical', quote: '“No buzzwords. Just how I approached the problem.”' },
+          { title: 'Thoughtful Breakdown', quote: '“I tore down how Stripe handles Y—here’s my take.”' },
+          { title: 'Humble & Hungry', quote: '“Early lesson I learned the hard way on a real project.”' },
+          { title: 'Direct Problem-Solver', quote: '“Here is how I cut API load time by 40% in 1 afternoon.”' },
+        ],
+        peeves: [
+          '✕ Desperate "Please help me find a job" posts',
+          '✕ Cringe "I’m humbled & honored to announce"',
+          '✕ Fake guru career advice',
+          '✕ AI buzzwords (“Delve”, “Thrilled”)',
+          '✕ Emojis on every line',
+          '✕ Generic ChatGPT definitions',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is one tricky problem you solved, built, or debugged recently that a 1-page resume completely fails to show?',
+          a1: '“Last week I rebuilt a slow search flow from scratch and cut page wait times from 4 seconds to 200 milliseconds.”',
+          q2: 'That is real proof. What was the hardest part you figured out along the way that other engineers or peers would respect?',
+          a2: '“Everyone assumed it was a database problem, but caching the query shape saved 90% of the work in 30 lines of code.”',
+          pills1: [
+            '“Rebuilt a slow feature and cut load time from 4s to 200ms.”',
+            '“Tore down a product onboarding flow and redesigned 3 fixes.”',
+          ],
+          pills2: [
+            '“Solved the bottleneck in 30 lines instead of a full rewrite.”',
+            '“Documented every trade-off so hiring leads see how I think.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Proof-of-Work + Metric Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“A resume says fast learner. Cutting a 4s query down to 200ms proves it in 10 seconds.”',
+            lines: [
+              'A resume says "strong problem solver." Show the work instead.',
+              'Last week I tackled a search flow taking 4 seconds per query.',
+              'Fixing the query shape cut it to 200ms in 30 lines.',
+            ],
+          },
+          {
+            tag: '02 · Engineering Trade-Off + Comparison Visual',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Before Optimization',
+            compLeftStat: '4,000ms load · redundant DB hits',
+            compRightTitle: 'After 30-Line Cache Fix',
+            compRightStat: '200ms load · 95% fewer queries',
+            lines: [
+              'Applying cold puts you in a pile of 500 identical PDFs.',
+              'Publishing two honest breakdowns of problems you solved this week puts you directly in front of the hiring team.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Proof-of-Work + Quote Visual',
+            visualType: 'quote_card',
+            quoteHeadline: '“A resume says fast learner. Showing real work proves it in 10 seconds.”',
+            lines: [
+              'A resume says "fast learner." Showing real work proves it in 10 seconds.',
+              'Last week I debugged a workflow stuck at 4 seconds per request.',
+              'Fixing how data was cached dropped it to 200ms in 30 lines.',
+            ],
+          },
+          {
+            tag: '02 · Build Breakdown + Before/After Graphic',
+            visualType: 'comparison_card',
+            compLeftTitle: '500 Cold Resume PDFs',
+            compLeftStat: '0 context on how you solve problems',
+            compRightTitle: 'Public Project Teardown',
+            compRightStat: '4s → 200ms architecture proof',
+            lines: [
+              'Applying cold puts you in a pile of 500 identical PDFs.',
+              'Publishing two honest breakdowns of problems you solved this week puts you directly in front of the hiring team.',
+            ],
+          },
+        ],
+        carouselHook: 'How I cut query wait time from 4 seconds down to 200ms in 30 lines of code (full breakdown):',
+        carouselSlides: [
+          'How I cut wait time from 4s to 200ms (in 3 steps).',
+          'The Bug: Every keystroke triggered a full join query.',
+          'Wrong Guess: We almost spent a week indexing tables.',
+          'The Fix: Normalized & cached the query shape in 30 lines.',
+          'Takeaway: Measure the bottleneck before rewriting.',
+        ],
+      },
+
+      influencer: {
+        badge: 'Creator Mode',
+        label: 'LinkedIn Influencer / Creator',
+        defaultWebsite: false,
+        sitePlaceholder: 'https://yournewsletter.com',
+        step4Heading: 'Do you have a newsletter, hub, or creator site to scan?',
+        step4Sub: 'Most creators go Pure Personal Brand—tap left only if you want us to match your newsletter/brand site.',
+        yesTitle: 'Yes — scan my creator / newsletter site',
+        yesSub: 'Pull newsletter offer & signature visual theme',
+        goalsWebsite: [
+          'Grow followers & breakout viral reach',
+          'Drive subscribers to my newsletter / site',
+          'Land brand sponsorships & partnerships',
+          'Become the #1 curator in my niche',
+          'Spark high-signal daily discussions',
+          'Turn attention into digital product sales',
+        ],
+        goalsPersonal: [
+          'Grow followers & breakout viral reach',
+          'Land brand sponsorships & partnerships',
+          'Become the #1 recognized voice in my niche',
+          'Build a loyal daily comment community',
+          'Keep posting consistently without burnout',
+          'Never sound recycled or repetitive',
+        ],
+        vibes: [
+          { title: 'High-Signal Curator', quote: '“I studied 50 launches this week—here are the 3 patterns.”' },
+          { title: 'Punchy & Scroll-Stopping', quote: '“One sharp hook. Zero wasted syllables.”' },
+          { title: 'Polarizing Contrarian', quote: '“Unpopular opinion that is about to age very well:”' },
+          { title: 'Visual Breakdown Pro', quote: '“Save this 5-slide cheat sheet before it gets buried.”' },
+          { title: 'Relatable Human', quote: '“Honest creator reality nobody posts on Tuesday.”' },
+          { title: 'Deep-Dive Analyst', quote: '“Full numbers & teardown from a breakout company.”' },
+        ],
+        peeves: [
+          '✕ Engagement-bait ("Comment YES")',
+          '✕ Copy-pasted viral templates',
+          '✕ AI words (“Delve”, “Tapestry”)',
+          '✕ Cringe motivational quotes',
+          '✕ Overused emoji bullet lists',
+          '✕ Generic surface-level tips',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is one spicy trend or bad habit exploding in your niche right now that your audience secretly hates?',
+          a1: '“Everyone is chasing empty carousels and engagement-bait templates instead of sharing one original observation.”',
+          q2: 'Dead on. What is one pattern or real number you noticed recently that backs up your point?',
+          a2: '“Smaller accounts with 2,000 followers are beating 100K-follower accounts whenever they share a specific personal breakdown.”',
+          pills1: [
+            '“Copy-paste viral templates are killing originality on LinkedIn.”',
+            '“Empty engagement bait destroys your actual buyer trust.”',
+          ],
+          pills2: [
+            '“Small niche creators are outperforming 100K celebrity accounts.”',
+            '“One specific personal teardown drives 5x more saves than tips.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Creator Take + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Copy-paste viral templates are the fastest way to get scrolled past in 2026.”',
+            lines: [
+              'Copy-paste templates used to guarantee LinkedIn reach.',
+              'In 2026 they are the fastest way to get scrolled past.',
+              'Readers save posts built from real observation and a point of view they have not seen ten times today.',
+            ],
+          },
+          {
+            tag: '02 · Algorithm Shift + Comparison Graphic',
+            visualType: 'comparison_card',
+            compLeftTitle: '100K Recycled Account',
+            compLeftStat: '0.4x baseline · audience fatigue',
+            compRightTitle: '2K Niche Practitioner',
+            compRightStat: '4.5x breakout · bookmarked by buyers',
+            lines: [
+              'Notice who is winning feeds right now:',
+              'Small niche practitioners sharing specific teardowns readers actually bookmark.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Creator Contrarian + Quote Visual',
+            visualType: 'quote_card',
+            quoteHeadline: '“Give the actual playbook away inside the post instead of begging for comments.”',
+            lines: [
+              'Engagement bait gets cheap impressions and expensive audience fatigue.',
+              'Give the actual playbook away right inside the post and watch who follows for real.',
+            ],
+          },
+          {
+            tag: '02 · Feed Pattern + Comparison Graphic',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Generic Tips Thread',
+            compLeftStat: 'Scrolled past in 1.2 seconds',
+            compRightTitle: 'Real Numbers Teardown',
+            compRightStat: '5x saves & profile clicks',
+            lines: [
+              'Small 2,000-follower practitioners are quietly outperforming massive accounts this quarter.',
+              'Specificity beats follower count every time.',
+            ],
+          },
+        ],
+        carouselHook: 'I studied 50 breakout LinkedIn posts this month. Here is why 2,000-follower creators are beating 100K accounts:',
+        carouselSlides: [
+          'Why small niche creators beat 100K accounts right now.',
+          'Shift 1: Feeds reward save-time over cheap comments.',
+          'Shift 2: Readers spot recycled AI hooks instantly.',
+          'Shift 3: One real teardown beats 10 generic tips.',
+          'Follow for weekly high-signal breakdowns.',
+        ],
+      },
+
+      executive: {
+        badge: 'Executive Mode',
+        label: 'Executive / Operator',
+        defaultWebsite: false,
+        sitePlaceholder: 'https://yourcompany.com',
+        step4Heading: 'Are you tying posts to your company brand, or keeping it personal?',
+        step4Sub: 'Most executives focus on personal leadership voice first—or scan their company site to match brand guidelines.',
+        yesTitle: 'Match my company brand',
+        yesSub: 'Pull approved company colors, tone & positioning',
+        goalsWebsite: [
+          'Elevate my company & leadership reputation',
+          'Attract senior talent to my organization',
+          'Share industry perspective without sounding PR-scripted',
+          'Turn 2-minute calls into executive posts',
+          'Support strategic partnerships & enterprise deals',
+          'Lead company-wide employee advocacy',
+        ],
+        goalsPersonal: [
+          'Build long-term executive authority',
+          'Share battle-tested leadership & hiring lessons',
+          'Attract board, advisory & speaking invites',
+          'Stay visible without living inside LinkedIn',
+          'Turn quick voice memos into sharp essays',
+          'Never sound like a corporate press release',
+        ],
+        vibes: [
+          { title: 'Calm Operator Authority', quote: '“Battle-tested lessons from scaling teams and systems.”' },
+          { title: 'Direct & Candid', quote: '“Skip the PR polish. Here’s how the decision actually felt.”' },
+          { title: 'Strategic Contrarian', quote: '“Why conventional enterprise wisdom misses the shift.”' },
+          { title: 'Talent & Culture Magnet', quote: '“What we look for in A-players—and why.”' },
+          { title: 'Concise Memos', quote: '“Three sharp observations from Q3 planning.”' },
+          { title: 'Data & Execution Focus', quote: '“Clear trade-offs, real metrics, zero fluff.”' },
+        ],
+        peeves: [
+          '✕ Stiff corporate PR-speak',
+          '✕ AI words (“Delve”, “Tapestry”)',
+          '✕ Overuse of emojis',
+          '✕ Cringe leadership platitudes',
+          '✕ Long rambling essays',
+          '✕ Fake humility',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is one hard leadership or scaling lesson you learned this year that most execs stay quiet about?',
+          a1: '“Hiring for polished resumes over high ownership slowed our best team down for two straight quarters.”',
+          q2: 'Strong insight. What changed the day you fixed it?',
+          a2: '“We cut two layers of status meetings and gave three builders direct ownership—shipping speed doubled in 30 days.”',
+          pills1: [
+            '“Status meetings were silently killing our best builders’ momentum.”',
+            '“Polished resumes fooled us more times than scrappy track records.”',
+          ],
+          pills2: [
+            '“Cut two meeting layers and doubled shipping speed in 30 days.”',
+            '“Gave 3 engineers direct ownership and watched velocity jump.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Leadership Memo + Quote Visual',
+            visualType: 'quote_card',
+            quoteHeadline: '“More status meetings rarely create alignment. They signal unclear ownership.”',
+            lines: [
+              'More status meetings rarely create better execution.',
+              'Last quarter we cut two layers of weekly syncs and gave three builders direct ownership. Shipping speed doubled in 30 days.',
+            ],
+          },
+          {
+            tag: '02 · Operating Shift + Comparison Card',
+            visualType: 'comparison_card',
+            compLeftTitle: '4 Hours of Weekly Syncs',
+            compLeftStat: 'Diffused accountability · slow ships',
+            compRightTitle: 'Single-Owner Outcomes',
+            compRightStat: '2x shipping velocity in 30 days',
+            lines: [
+              'High performers do not want micromanagement or corporate theater.',
+              'Give them clear outcomes, short feedback loops, and room to ship.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Candid Executive Note + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Credentials open doors. Unscripted ownership is what actually ships results.”',
+            lines: [
+              'Hiring purely for shiny resumes slowed us down for two quarters.',
+              'The turnaround came when we started indexing on unscripted ownership instead.',
+            ],
+          },
+          {
+            tag: '02 · Operator Rhythm + Comparison Card',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Committee Consensus',
+            compLeftStat: '6 weeks to approve a test',
+            compRightTitle: 'Direct Builder Ownership',
+            compRightStat: 'Shipped & measured in 48 hours',
+            lines: [
+              'If an entire department needs 4 hours of syncs to stay aligned, the problem is not communication.',
+              'The problem is fuzzy decision ownership.',
+            ],
+          },
+        ],
+        carouselHook: 'How cutting two layers of status meetings doubled our engineering shipping speed in 30 days:',
+        carouselSlides: [
+          'How cutting 2 meeting layers doubled shipping speed.',
+          'Symptom: Builders spent 11 hrs/week updating slides.',
+          'Change 1: Replaced status calls with 5-line written memos.',
+          'Change 2: Assigned one directly responsible owner per goal.',
+          'Result: 2x release cadence and happier senior talent.',
+        ],
+      },
+
+      custom: {
+        badge: 'Custom Mode',
+        label: 'Independent Creator',
+        defaultWebsite: false,
+        sitePlaceholder: 'https://yoursite.com',
+        step4Heading: 'Do you have a website to scan for brand colors & info?',
+        step4Sub: 'We can grab your colors and bio from a site, or keep it purely personal.',
+        yesTitle: 'Yes — scan my website',
+        yesSub: 'Grab colors, logo & context via Firecrawl',
+        goalsWebsite: [
+          'Build authority in my specific niche',
+          'Attract inbound opportunities & DMs',
+          'Showcase my work clearly without hype',
+          'Grow a loyal audience of peers',
+          'Turn spoken thoughts into quick posts',
+          'Publish consistently with zero stress',
+        ],
+        goalsPersonal: [
+          'Build authority in my specific niche',
+          'Attract inbound opportunities & DMs',
+          'Share honest lessons from my work',
+          'Grow a genuine network of peers',
+          'Turn quick voice notes into clean posts',
+          'Avoid sounding like generic AI',
+        ],
+        vibes: [
+          { title: 'Blunt & Direct', quote: '“Clear thoughts with zero filler.”' },
+          { title: 'Story-First Human', quote: '“Real moments turned into sharp lessons.”' },
+          { title: 'Contrarian Thinker', quote: '“Questioning default industry habits.”' },
+          { title: 'Tactical Guide', quote: '“Actionable steps people actually bookmark.”' },
+          { title: 'Warm & Authentic', quote: '“Honest reflections over morning coffee.”' },
+          { title: 'Data & Proof Driven', quote: '“Letting real outcomes speak.”' },
+        ],
+        peeves: [
+          '✕ AI words (“Delve”, “Thrilled”)',
+          '✕ Emojis on every line',
+          '✕ Cringe motivational quotes',
+          '✕ Humble-brags',
+          '✕ Long paragraphs',
+          '✕ Pushy sales pitches',
+          '✕ Spammy #hashtags',
+        ],
+        interview: {
+          q1: 'Tell me out loud—what is one strong opinion or hard lesson from your work that more people need to hear?',
+          a1: '“People complicate LinkedIn with 12-step frameworks when sharing one honest lesson from your day beats all of them.”',
+          q2: 'Love that. Can you give me one quick real example from your own week?',
+          a2: '“Just yesterday a messy 2-minute reflection sparked better conversations than posts I spent two hours editing.”',
+          pills1: [
+            '“Sharing one honest lesson beats complicated content frameworks.”',
+            '“Most people hate writing because they try to sound too formal.”',
+          ],
+          pills2: [
+            '“A 2-minute unscripted thought sparked my best replies this week.”',
+            '“Dropped perfectionism and finally stayed consistent.”',
+          ],
+        },
+        postsWebsite: [
+          {
+            tag: '01 · Core Perspective + Quote Visual',
+            visualType: 'quote_card',
+            quoteHeadline: '“One honest observation from your actual week beats twenty safe AI posts.”',
+            lines: [
+              'Most people overcomplicate building on LinkedIn.',
+              'One honest observation from your actual week beats twenty safe AI posts.',
+            ],
+          },
+          {
+            tag: '02 · Real Work + Comparison Visual',
+            visualType: 'comparison_card',
+            compLeftTitle: '2 Hours Over-Editing',
+            compLeftStat: 'Sounds stiff & formal',
+            compRightTitle: '2-Min Spoken Thought',
+            compRightStat: 'Sounds unmistakably human',
+            lines: [
+              'A messy 2-minute spoken thought often resonates deeper than something polished for two hours.',
+              'Real voice beats fake perfection.',
+            ],
+          },
+        ],
+        postsPersonal: [
+          {
+            tag: '01 · Core Perspective + Quote Card',
+            visualType: 'quote_card',
+            quoteHeadline: '“Write the exact way you talk to a smart colleague over coffee.”',
+            lines: [
+              'Most people quit LinkedIn because they force themselves to sound overly formal.',
+              'Write the exact way you talk to a smart colleague over coffee.',
+            ],
+          },
+          {
+            tag: '02 · Honest Lesson + Comparison Card',
+            visualType: 'comparison_card',
+            compLeftTitle: 'Staring at Blank Screen',
+            compLeftStat: '0 posts published this month',
+            compRightTitle: 'Talking Out Loud for 2m',
+            compRightStat: '3 finished posts + visuals ready',
+            lines: [
+              'A 2-minute real story from this week will outperform two hours of staring at a blank doc.',
+            ],
+          },
+        ],
+        carouselHook: 'Why talking out loud for 2 minutes beats staring at a blank LinkedIn box:',
+        carouselSlides: [
+          'Why talking beats staring at a blank LinkedIn doc.',
+          '1. When you type, you self-edit into boring corporate speak.',
+          '2. When you talk, you naturally use real examples.',
+          '3. Pair your spoken take with a clean visual card.',
+          'Simple consistency wins.',
+        ],
+      },
+    };
+
+    // ==================== PRE-COMPILED CREATOR STYLE VAULT (4 Creators per ICP with DP) ====================
+    const CREATOR_STYLE_LIBRARY = {
+      founder: [
+        { id: 'adam_robinson', name: 'Adam Robinson', initials: 'AR', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=11', shortTag: 'Blunt founder', styleMode: 'contrarian' },
+        { id: 'justin_welsh', name: 'Justin Welsh', initials: 'JW', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=12', shortTag: 'Short systems', styleMode: 'tactical' },
+        { id: 'lara_acosta', name: 'Lara Acosta', initials: 'LA', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=32', shortTag: 'Story-first', styleMode: 'storyteller' },
+        { id: 'greg_isenberg', name: 'Greg Isenberg', initials: 'GI', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=14', shortTag: 'Idea builder', styleMode: 'tactical' },
+      ],
+      freelancer: [
+        { id: 'matt_barker', name: 'Matt Barker', initials: 'MB', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=15', shortTag: 'Client stories', styleMode: 'storyteller' },
+        { id: 'jasmin_alic', name: 'Jasmin Alić', initials: 'JA', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=33', shortTag: 'Tight audits', styleMode: 'tactical' },
+        { id: 'chris_do', name: 'Chris Do', initials: 'CD', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=52', shortTag: 'Bold reframes', styleMode: 'contrarian' },
+        { id: 'dakota_r_fl', name: 'Dakota Robertson', initials: 'DR', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=53', shortTag: 'Clean copy', styleMode: 'tactical' },
+      ],
+      ghostwriter: [
+        { id: 'lara_acosta_gw', name: 'Lara Acosta', initials: 'LA', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=32', shortTag: 'Hook craft', styleMode: 'storyteller' },
+        { id: 'dakota_robertson', name: 'Dakota Robertson', initials: 'DR', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=53', shortTag: 'Copy teardowns', styleMode: 'tactical' },
+        { id: 'luke_matthews', name: 'Luke Matthews', initials: 'LM', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=59', shortTag: 'Raw & real', styleMode: 'contrarian' },
+        { id: 'kieran_drew', name: 'Kieran Drew', initials: 'KD', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=60', shortTag: 'Punchy essays', styleMode: 'storyteller' },
+      ],
+      job_aspirant: [
+        { id: 'alex_xu', name: 'Alex Xu', initials: 'AX', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=51', shortTag: 'Visual systems', styleMode: 'tactical' },
+        { id: 'gergely_orosz', name: 'Gergely Orosz', initials: 'GO', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=54', shortTag: 'Zero-hype tech', styleMode: 'contrarian' },
+        { id: 'lenny_rachitsky', name: 'Lenny Rachitsky', initials: 'LR', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=56', shortTag: 'Clear lessons', styleMode: 'storyteller' },
+        { id: 'swyx_dev', name: 'Shawn Wang', initials: 'SW', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=57', shortTag: 'Builder notes', styleMode: 'tactical' },
+      ],
+      influencer: [
+        { id: 'justin_welsh_cr', name: 'Justin Welsh', initials: 'JW', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=12', shortTag: 'Crisp lists', styleMode: 'tactical' },
+        { id: 'sahil_bloom', name: 'Sahil Bloom', initials: 'SB', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=61', shortTag: 'Mental models', styleMode: 'contrarian' },
+        { id: 'lara_acosta_cr', name: 'Lara Acosta', initials: 'LA', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=32', shortTag: 'Human stories', styleMode: 'storyteller' },
+        { id: 'dan_koe', name: 'Dan Koe', initials: 'DK', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=68', shortTag: 'Deep takes', styleMode: 'contrarian' },
+      ],
+      executive: [
+        { id: 'claire_hj', name: 'Claire H. Johnson', initials: 'CJ', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=44', shortTag: 'Calm operator', styleMode: 'storyteller' },
+        { id: 'shreyas_doshi', name: 'Shreyas Doshi', initials: 'SD', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=65', shortTag: 'Clear systems', styleMode: 'tactical' },
+        { id: 'dave_kellogg', name: 'Dave Kellogg', initials: 'DK', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=67', shortTag: 'Candid truths', styleMode: 'contrarian' },
+        { id: 'julie_zhuo', name: 'Julie Zhuo', initials: 'JZ', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=47', shortTag: 'Team craft', styleMode: 'storyteller' },
+      ],
+      custom: [
+        { id: 'justin_welsh_cu', name: 'Justin Welsh', initials: 'JW', avatarBg: '#18181B', avatarUrl: 'https://i.pravatar.cc/120?img=12', shortTag: 'Clear systems', styleMode: 'tactical' },
+        { id: 'sahil_bloom_cu', name: 'Sahil Bloom', initials: 'SB', avatarBg: '#134E8E', avatarUrl: 'https://i.pravatar.cc/120?img=61', shortTag: 'Sharp notes', styleMode: 'contrarian' },
+        { id: 'lara_acosta_cu', name: 'Lara Acosta', initials: 'LA', avatarBg: '#7C2D12', avatarUrl: 'https://i.pravatar.cc/120?img=32', shortTag: 'Human stories', styleMode: 'storyteller' },
+        { id: 'ali_abdaal', name: 'Ali Abdaal', initials: 'AA', avatarBg: '#1B4332', avatarUrl: 'https://i.pravatar.cc/120?img=69', shortTag: 'Friendly guide', styleMode: 'tactical' },
+      ],
+    };
+
+    let currentStep = 1;
+    let interviewTurn = 1;
+    let isListening = false;
+    let barsAnim = null;
+    let scanTimerStarted = false;
+    let scanProgress = 0;
+    let activeSlideIdx = 0;
+
+    const state = {
+      icp: 'founder',
+      customRole: '',
+      linkedinConnected: false,
+      hasWebsite: true,
+      selectedGoals: [],
+      selectedVibes: ['Blunt & No-BS', 'Contrarian Challenger'],
+      selectedPacing: 'Short & punchy (3–6 lines)',
+      selectedPeeves: [],
+      selectedVisuals: ['Editorial Carousels', 'Infographic Cheat-Sheets', 'Quote / X-Style Cards'],
+      visualTheme: 'Bold Brand Color',
+      spokenAnswer1: '',
+      spokenAnswer2: '',
+      hex: '#134E8E',
+      selectedVoiceId: 'own',
+    };
+
+    function getActiveConfig() {
+      return ICP_CONFIG[state.icp] || ICP_CONFIG.founder;
+    }
+
+    function getMatchedCreatorsForICP() {
+      return CREATOR_STYLE_LIBRARY[state.icp] || CREATOR_STYLE_LIBRARY.founder;
+    }
+
+    function getActiveVoiceObject() {
+      if (state.selectedVoiceId === 'own') {
+        return {
+          id: 'own',
+          name: 'My own voice',
+          initials: state.linkedinConnected ? 'AF' : 'ME',
+          avatarBg: '#121210',
+          avatarUrl: '',
+          shortTag: state.linkedinConnected ? 'Your posts' : 'Your tone',
+          styleMode: 'own',
+        };
+      }
+      const list = getMatchedCreatorsForICP();
+      return list.find((c) => c.id === state.selectedVoiceId) || list[0];
+    }
+
+    function getDisplayRole() {
+      if (state.icp === 'custom') return state.customRole || 'Independent Creator';
+      return getActiveConfig().label;
+    }
+
+    function getCleanDomain() {
+      const cfg = getActiveConfig();
+      const fallback = cfg.sitePlaceholder.replace(/^https?:\/\//, '');
+      const raw = document.getElementById('company-url-input')?.value || fallback;
+      return raw.trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '') || fallback;
+    }
+
+    function updateHeaderBadge() {
+      const cfg = getActiveConfig();
+      const badge = document.getElementById('icp-header-badge');
+      badge.textContent = state.hasWebsite ? cfg.badge : `${cfg.badge} · Personal`;
+    }
+
+    function updateProgress(step) {
+      // Smooth unnumbered bar starting at 18% on screen 1 so it feels quick and effortless
+      const pct = Math.min(100, Math.round(10 + (step / 9) * 90));
+      document.getElementById('top-progress-bar').style.width = `${pct}%`;
+
+      const ticker = document.getElementById('fetch-ticker-bar');
+      if (step >= 5 && step <= 7) {
+        ticker.classList.remove('hidden');
+        renderTickerMilestones();
+        startBackgroundScanSimulation();
+      } else {
+        ticker.classList.add('hidden');
+      }
+    }
+
+    function renderTickerMilestones() {
+      const container = document.getElementById('ticker-milestones');
+      if (state.hasWebsite) {
+        container.innerHTML = `
+          <span id="tick-1" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> Website</span>
+          <span id="tick-2" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> Colors &amp; Logo</span>
+          <span id="tick-3" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> LinkedIn Voice</span>
+          <span id="tick-4" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> 4 Top Creators</span>
+        `;
+      } else {
+        container.innerHTML = `
+          <span id="tick-1" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> Profile Headline</span>
+          <span id="tick-2" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> Past Posts</span>
+          <span id="tick-3" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> Personal Voice</span>
+          <span id="tick-4" class="flex items-center gap-1 transition-colors"><span class="tick-icon">○</span> 4 Top Creators</span>
+        `;
+      }
+    }
+
+    function startBackgroundScanSimulation(forceRestart = false) {
+      if (scanTimerStarted && !forceRestart) return;
+      scanTimerStarted = true;
+      const domain = getCleanDomain();
+      const roleShort = getDisplayRole().split('/')[0].trim();
+
+      const steps = state.hasWebsite
+        ? [
+            { pct: 30, delay: 300, msg: `Firecrawl scanning ${domain} & LinkedIn...` },
+            { pct: 55, delay: 2600, tick: 'tick-1', label: 'Website (9 pages)', msg: `Extracting colors, logo & offer from ${domain}...` },
+            { pct: 76, delay: 5400, tick: 'tick-2', label: 'Colors & Logo', msg: 'Analyzing your past LinkedIn posts...' },
+            { pct: 90, delay: 8000, tick: 'tick-3', label: state.linkedinConnected ? '34 posts analyzed' : 'Voice calibrated', msg: `Picking 4 top ${roleShort} creators...` },
+            { pct: 100, delay: 10400, tick: 'tick-4', label: '4 Creators Matched', msg: `✓ Brand Kit + 4 Top ${roleShort} Creators Ready!`, done: true },
+          ]
+        : [
+            { pct: 30, delay: 300, msg: 'Reading your LinkedIn profile & headline...' },
+            { pct: 55, delay: 2400, tick: 'tick-1', label: 'Profile Headline', msg: 'Analyzing your past LinkedIn posts...' },
+            { pct: 76, delay: 4800, tick: 'tick-2', label: state.linkedinConnected ? '34 posts analyzed' : 'Tone calibrated', msg: 'Calibrating personal brand voice...' },
+            { pct: 90, delay: 7200, tick: 'tick-3', label: 'Personal Voice Ready', msg: `Picking 4 top ${roleShort} creators...` },
+            { pct: 100, delay: 9400, tick: 'tick-4', label: '4 Creators Matched', msg: `✓ Personal Voice + 4 Top ${roleShort} Creators Ready!`, done: true },
+          ];
+
+      steps.forEach((m) => {
+        setTimeout(() => {
+          scanProgress = Math.max(scanProgress, m.pct);
+          document.getElementById('ticker-pct').textContent = `${scanProgress}%`;
+          document.getElementById('ticker-main-text').textContent = m.msg;
+
+          if (m.tick) {
+            const el = document.getElementById(m.tick);
+            if (el) {
+              el.classList.remove('text-muted');
+              el.classList.add('text-emerald-700', 'font-medium');
+              el.innerHTML = `<span class="tick-icon">✓</span> ${m.label}`;
+            }
+          }
+          if (m.done) {
+            const dot = document.getElementById('ticker-dot');
+            dot.classList.remove('bg-cobalt', 'animate-pulse');
+            dot.classList.add('bg-emerald-600');
+          }
+        }, m.delay);
+      });
+    }
+
+    // ==================== SCREEN 1: 6 ICPs ====================
+    function selectICP(icpKey, cardEl) {
+      state.icp = icpKey;
+      document.querySelectorAll('.icp-card').forEach((c) => c.classList.remove('selected'));
+      if (cardEl) cardEl.classList.add('selected');
+
+      const wrap = document.getElementById('custom-icp-wrap');
+      if (icpKey === 'custom') {
+        wrap.classList.remove('hidden');
+        document.getElementById('custom-icp-input').focus();
+      } else {
+        wrap.classList.add('hidden');
+      }
+
+      const cfg = getActiveConfig();
+      state.hasWebsite = cfg.defaultWebsite;
+      state.selectedGoals = [];
+      state.selectedVibes = [cfg.vibes[0].title, cfg.vibes[1].title];
+      state.selectedPeeves = [cfg.peeves[0], cfg.peeves[1], cfg.peeves[2]];
+      state.spokenAnswer1 = '';
+      state.spokenAnswer2 = '';
+      state.selectedVoiceId = 'own';
+      interviewTurn = 1;
+      activeSlideIdx = 0;
+
+      const urlInput = document.getElementById('company-url-input');
+      if (urlInput) {
+        urlInput.value = cfg.sitePlaceholder;
+        urlInput.placeholder = cfg.sitePlaceholder;
+      }
+
+      updateHeaderBadge();
+      renderStep2Goals();
+      applyStep4UI();
+      renderStep5VibesAndPeeves();
+    }
+
+    // ==================== SCREEN 2: GOALS ====================
+    function renderStep2Goals() {
+      const cfg = getActiveConfig();
+      const list = state.hasWebsite ? cfg.goalsWebsite : cfg.goalsPersonal;
+
+      if (!state.selectedGoals.length) {
+        state.selectedGoals = [list[0], list[1]];
+      }
+
+      document.getElementById('step2-kicker').textContent = `${cfg.label} Endgame`;
+      const grid = document.getElementById('goals-grid');
+      grid.innerHTML = '';
+      list.forEach((goalText) => {
+        const active = state.selectedGoals.includes(goalText);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `tap-card text-left px-4 py-3 rounded-xl border border-rule bg-white ${active ? 'selected' : ''}`;
+        btn.innerHTML = `<div class="text-sm font-medium"></div>`;
+        btn.querySelector('div').textContent = goalText;
+        btn.onclick = () => {
+          btn.classList.toggle('selected');
+          if (btn.classList.contains('selected')) {
+            if (!state.selectedGoals.includes(goalText)) state.selectedGoals.push(goalText);
+          } else {
+            state.selectedGoals = state.selectedGoals.filter((g) => g !== goalText);
+          }
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function toggleCustomBox(boxId, inputId) {
+      const box = document.getElementById(boxId);
+      box.classList.toggle('hidden');
+      if (!box.classList.contains('hidden')) {
+        document.getElementById(inputId).focus();
+      }
+    }
+
+    function addCustomGoal() {
+      const input = document.getElementById('custom-goal-input');
+      const val = input.value.trim();
+      if (!val) return;
+      state.selectedGoals.push(val);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tap-card selected text-left px-4 py-3 rounded-xl border border-rule bg-white';
+      btn.innerHTML = `<div class="text-sm font-medium"></div>`;
+      btn.querySelector('div').textContent = val;
+      btn.onclick = () => btn.classList.toggle('selected');
+      document.getElementById('goals-grid').appendChild(btn);
+      input.value = '';
+      document.getElementById('custom-goal-box').classList.add('hidden');
+    }
+
+    // ==================== SCREEN 3: LINKEDIN CONNECT ====================
+    function triggerLinkedInConnect() {
+      const btn = document.getElementById('linkedin-connect-btn');
+      const card = document.getElementById('linkedin-fetching-card');
+      document.getElementById('linkedin-btn-label').textContent = 'Connecting via Zernio...';
+
+      setTimeout(() => {
+        state.linkedinConnected = true;
+        btn.classList.add('hidden');
+        card.classList.remove('hidden');
+        card.classList.add('flex');
+        toast('LinkedIn connected — reading 34 posts & matching 4 creators!');
+      }, 420);
+    }
+
+    // ==================== SCREEN 4: WEBSITE VS PERSONAL ====================
+    function applyStep4UI() {
+      const cfg = getActiveConfig();
+      document.getElementById('step4-heading').textContent = cfg.step4Heading;
+      document.getElementById('step4-sub').textContent = cfg.step4Sub;
+      document.getElementById('brand-yes-title').textContent = cfg.yesTitle;
+      document.getElementById('brand-yes-sub').textContent = cfg.yesSub;
+      setWebsiteMode(state.hasWebsite, false);
+    }
+
+    function setWebsiteMode(hasWebsite, updateGoals = true) {
+      state.hasWebsite = hasWebsite;
+      if (updateGoals) {
+        const cfg = getActiveConfig();
+        const list = hasWebsite ? cfg.goalsWebsite : cfg.goalsPersonal;
+        state.selectedGoals = [list[0], list[1]];
+      }
+
+      const yesTab = document.getElementById('brand-yes-tab');
+      const noTab = document.getElementById('brand-no-tab');
+      const webPanel = document.getElementById('website-panel');
+      const persNote = document.getElementById('personal-only-note');
+      const cta = document.getElementById('step4-cta-label');
+
+      if (hasWebsite) {
+        yesTab.classList.add('selected');
+        noTab.classList.remove('selected');
+        webPanel.classList.remove('hidden');
+        persNote.classList.add('hidden');
+        cta.textContent = 'Start Website Scan & Continue →';
+      } else {
+        noTab.classList.add('selected');
+        yesTab.classList.remove('selected');
+        webPanel.classList.add('hidden');
+        persNote.classList.remove('hidden');
+        cta.textContent = 'Continue (Personal Brand Mode) →';
+      }
+      updateHeaderBadge();
+    }
+
+    function startScanAndAdvance() {
+      scanTimerStarted = false;
+      scanProgress = 0;
+      startBackgroundScanSimulation(true);
+      goToStep(5);
+    }
+
+    // ==================== SCREEN 5: VIBES + GUARDRAILS ====================
+    function renderStep5VibesAndPeeves() {
+      const cfg = getActiveConfig();
+      const grid = document.getElementById('vibes-grid');
+      grid.innerHTML = '';
+
+      cfg.vibes.forEach((v) => {
+        const active = state.selectedVibes.includes(v.title);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `tap-card text-left px-4 py-2.5 rounded-xl border border-rule bg-white ${active ? 'selected' : ''}`;
+        btn.innerHTML = `
+          <div class="text-sm font-semibold"></div>
+          <div class="sub text-xs text-muted mt-0.5"></div>
+        `;
+        btn.querySelector('.text-sm').textContent = v.title;
+        btn.querySelector('.sub').textContent = v.quote;
+        btn.onclick = () => {
+          btn.classList.toggle('selected');
+          if (btn.classList.contains('selected')) {
+            if (!state.selectedVibes.includes(v.title)) state.selectedVibes.push(v.title);
+          } else {
+            state.selectedVibes = state.selectedVibes.filter((x) => x !== v.title);
+          }
+        };
+        grid.appendChild(btn);
+      });
+
+      const container = document.getElementById('peeve-pills');
+      container.innerHTML = '';
+      cfg.peeves.forEach((pText) => {
+        const active = state.selectedPeeves.includes(pText);
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = `tap-pill px-3 py-1 text-[11px] font-medium rounded-full border border-rule bg-paper ${active ? 'selected' : ''}`;
+        pill.textContent = pText;
+        pill.onclick = () => {
+          pill.classList.toggle('selected');
+          if (pill.classList.contains('selected')) {
+            if (!state.selectedPeeves.includes(pText)) state.selectedPeeves.push(pText);
+          } else {
+            state.selectedPeeves = state.selectedPeeves.filter((x) => x !== pText);
+          }
+        };
+        container.appendChild(pill);
+      });
+    }
+
+    function saveCustomVibe() {
+      const input = document.getElementById('custom-vibe-input');
+      const val = input.value.trim();
+      if (!val) return;
+      state.selectedVibes.push(val);
+      document.getElementById('custom-vibe-box').classList.add('hidden');
+      toast(`Added custom vibe: "${val}"`);
+    }
+
+    function addCustomPeeve() {
+      const input = document.getElementById('custom-peeve-input');
+      const val = input.value.trim();
+      if (!val) return;
+      const formatted = `✕ ${val}`;
+      state.selectedPeeves.push(formatted);
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'tap-pill selected px-3 py-1 text-[11px] font-medium rounded-full border border-rule bg-paper';
+      pill.textContent = formatted;
+      pill.onclick = () => pill.classList.toggle('selected');
+      document.getElementById('peeve-pills').appendChild(pill);
+      input.value = '';
+      document.getElementById('custom-peeve-box').classList.add('hidden');
+    }
+
+    // ==================== SCREEN 6: VISUAL & IMAGE STYLE ====================
+    function toggleVisualCard(card, label) {
+      card.classList.toggle('selected');
+      if (card.classList.contains('selected')) {
+        if (!state.selectedVisuals.includes(label)) state.selectedVisuals.push(label);
+      } else {
+        state.selectedVisuals = state.selectedVisuals.filter((v) => v !== label);
+      }
+    }
+
+    function selectVisualTheme(themeName, btn) {
+      state.visualTheme = themeName;
+      document.querySelectorAll('.theme-pill').forEach((p) => p.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    // ==================== SCREEN 7: 30s AI INTERVIEW ====================
+    function renderStep7Interview() {
+      const cfg = getActiveConfig();
+      const iv = cfg.interview;
+      const vibeText = state.selectedVibes[0] || cfg.vibes[0].title;
+      const introPrefix = `As a <strong>${getDisplayRole()}</strong> with a <strong>${vibeText}</strong> voice,`;
+
+      document.getElementById('ai-turn1-text').innerHTML = `“${introPrefix} ${iv.q1}”`;
+      document.getElementById('ai-turn2-text').textContent = `“${iv.q2}”`;
+
+      interviewTurn = 1;
+      document.getElementById('user-bubble-1').classList.add('hidden');
+      document.getElementById('ai-bubble-2').classList.add('hidden');
+      document.getElementById('user-bubble-2').classList.add('hidden');
+      document.getElementById('orb-action-label').textContent = 'Tap to Talk';
+      document.getElementById('orb-helper').textContent = 'Speak for 25 seconds — your AI Ghostwriter will ask 1 smart follow-up.';
+
+      renderQuickPills(iv.pills1);
+    }
+
+    function renderQuickPills(pillList) {
+      const wrap = document.getElementById('quick-answer-pills');
+      wrap.innerHTML = `<div class="text-[11px] text-muted text-center mb-1.5">Or tap a thought if you can’t talk right now:</div><div class="flex flex-wrap justify-center gap-1.5"></div>`;
+      const row = wrap.querySelector('.flex');
+      pillList.forEach((txt) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'px-3 py-1 rounded-full border border-rule bg-paper hover:border-ink text-[11px] text-ink transition-colors';
+        b.textContent = txt;
+        b.onclick = () => useQuickVoicePill(txt);
+        row.appendChild(b);
+      });
+    }
+
+    // ==================== SCREEN 8: EVERYTHING COMES TOGETHER ====================
+    function renderStep8Proof() {
+      const cfg = getActiveConfig();
+      const domain = getCleanDomain();
+      const vibeText = state.selectedVibes.length ? state.selectedVibes.join(' · ') : cfg.vibes[0].title;
+      const goalText = state.selectedGoals.length ? state.selectedGoals.join(' · ') : cfg.goalsPersonal[0];
+
+      // Pillar 1: LinkedIn
+      document.getElementById('proof-li-title').textContent = state.linkedinConnected
+        ? 'Arjun · 34 posts analyzed ✓'
+        : 'Voice profile calibrated ✓';
+      document.getElementById('proof-role-vibe').textContent = `${getDisplayRole()} · ${vibeText}`;
+
+      const nf = document.getElementById('proof-notfor-list');
+      nf.innerHTML = '';
+      state.selectedPeeves.slice(0, 4).forEach((p) => {
+        const tag = document.createElement('span');
+        tag.className = 'px-2 py-0.5 bg-red-50 border border-red-200 text-red-800 rounded text-[10px] font-medium';
+        tag.textContent = p;
+        nf.appendChild(tag);
+      });
+
+      // Pillar 2: Website vs Personal Kit
+      if (state.hasWebsite) {
+        document.getElementById('proof-left-kicker').textContent = '2 · Fetched Website Brand Kit';
+        document.getElementById('proof-site-title').textContent = `${domain} · 9 pages ✓`;
+        document.getElementById('proof-logo-badge').textContent = domain.charAt(0).toUpperCase();
+        document.getElementById('proof-box1-label').textContent = 'Extracted Offer & Positioning';
+        document.getElementById('proof-box1-text').textContent =
+          `Pulled from ${domain}: helping ${cfg.label.toLowerCase()} buyers get results without generic templates.`;
+      } else {
+        document.getElementById('proof-left-kicker').textContent = '2 · Personal Brand Kit';
+        document.getElementById('proof-site-title').textContent = 'Pure Personal Mode ✓';
+        document.getElementById('proof-logo-badge').textContent = 'ME';
+        document.getElementById('proof-box1-label').textContent = 'Primary Personal Brand Focus';
+        document.getElementById('proof-box1-text').textContent = goalText;
+      }
+
+      // Pillar 3: Voice Interview Story
+      const take1 = state.spokenAnswer1 || cfg.interview.a1;
+      const take2 = state.spokenAnswer2 || cfg.interview.a2;
+      document.getElementById('proof-voice-take').textContent = `${take1} → ${take2}`;
+
+      // Pillar 4: Visual & Image Engine
+      document.getElementById('proof-theme-badge').textContent = `${state.visualTheme} ✓`;
+      const vp = document.getElementById('proof-visual-pills');
+      vp.innerHTML = '';
+      (state.selectedVisuals.length ? state.selectedVisuals : ['Editorial Carousels', 'Quote / X-Style Cards']).forEach((v) => {
+        const s = document.createElement('span');
+        s.className = 'px-2.5 py-1 rounded-full bg-surface border border-rule text-ink text-[11px] font-medium';
+        s.textContent = `✓ ${v}`;
+        vp.appendChild(s);
+      });
+
+      // Pillar 5: Pre-Matched Industry Creator Style Picker
+      renderStep8CreatorPicker();
+    }
+
+    function renderAvatarHTML(voice, sizeClass = 'w-9 h-9', textClass = 'text-xs') {
+      if (voice.avatarUrl) {
+        return `
+          <span class="relative ${sizeClass} rounded-full overflow-hidden shrink-0 inline-flex items-center justify-center" style="background:${voice.avatarBg};">
+            <img src="${voice.avatarUrl}" alt="${voice.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
+            <span class="hidden text-white ${textClass} font-semibold">${voice.initials}</span>
+          </span>
+        `;
+      }
+      return `
+        <span class="${sizeClass} rounded-full text-white ${textClass} font-semibold inline-flex items-center justify-center shrink-0" style="background:${voice.avatarBg};">
+          ${voice.initials}
+        </span>
+      `;
+    }
+
+    function renderStep8CreatorPicker() {
+      const creators = getMatchedCreatorsForICP();
+      const roleShort = getDisplayRole().split('/')[0].trim();
+      const activeVoice = getActiveVoiceObject();
+
+      document.getElementById('step8-creator-heading').textContent =
+        `Use your own voice, or try a top ${roleShort} creator`;
+
+      const ownBtn = document.getElementById('step8-own-voice-btn');
+      const ownLabel = document.getElementById('step8-own-voice-label');
+      if (ownBtn && ownLabel) {
+        ownLabel.textContent = state.linkedinConnected ? 'My own voice (34 posts)' : 'My own voice';
+        if (state.selectedVoiceId === 'own') {
+          ownBtn.classList.add('selected');
+        } else {
+          ownBtn.classList.remove('selected');
+        }
+      }
+
+      const grid = document.getElementById('step8-creator-grid');
+      grid.innerHTML = '';
+
+      creators.forEach((c) => {
+        const isSel = state.selectedVoiceId === c.id;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.onclick = () => selectVoiceStyle(c.id);
+        card.className = `tap-card text-left px-3 py-2.5 rounded-xl border border-rule bg-paper flex items-center gap-2.5 ${isSel ? 'selected' : ''}`;
+        card.innerHTML = `
+          ${renderAvatarHTML(c, 'w-9 h-9', 'text-[11px]')}
+          <div class="min-w-0">
+            <div class="text-xs font-semibold truncate">${c.name}</div>
+            <div class="sub text-[11px] text-muted truncate">${c.shortTag}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      const genCta = document.getElementById('step8-generate-cta');
+      if (genCta) {
+        genCta.textContent = activeVoice.id === 'own'
+          ? 'Generate My First 3 Posts + Visuals →'
+          : `Generate 3 Posts in ${activeVoice.name}’s Style →`;
+      }
+    }
+
+    function selectVoiceStyle(voiceId) {
+      state.selectedVoiceId = voiceId;
+      renderStep8CreatorPicker();
+    }
+
+    function pickColor(hex, btn) {
+      state.hex = hex;
+      document.documentElement.style.setProperty('--brand-primary', hex);
+      document.getElementById('proof-hex-label').textContent = hex;
+      document.querySelectorAll('.swatch').forEach((s) => s.classList.remove('ring-2', 'ring-offset-1', 'ring-ink'));
+      btn.classList.add('ring-2', 'ring-offset-1', 'ring-ink');
+      toast(`Brand color updated (${hex})`);
+    }
+
+    // ==================== SCREEN 9: 3 POSTS IN THE SELECTED VOICE ====================
+    function getVisualContainerStyle() {
+      if (state.visualTheme === 'Light Editorial Paper') {
+        return { bg: '#F4F3EE', fg: '#121210', sub: '#57564F', border: '1px solid #DEDCD2', accentBg: state.hex, accentFg: '#FFFFFF' };
+      }
+      if (state.visualTheme === 'Dark Minimal Obsidian') {
+        return { bg: '#121210', fg: '#FBFBF8', sub: '#A1A09A', border: '1px solid #272723', accentBg: state.hex, accentFg: '#FFFFFF' };
+      }
+      return { bg: state.hex, fg: '#FFFFFF', sub: 'rgba(255,255,255,0.8)', border: 'none', accentBg: '#FFFFFF', accentFg: '#121210' };
+    }
+
+    function transformPostLinesForVoice(post, idx, voice) {
+      const base = post.lines;
+      if (voice.styleMode === 'own') return base;
+
+      const lead = base[0] || '';
+      const mid = base[1] || '';
+      const end = base[2] || '';
+
+      if (voice.styleMode === 'tactical') {
+        if (idx === 0) {
+          return [
+            `${lead} Here is the 3-step fix:`,
+            `1. Drop the default habit: ${lead.replace(/\.$/, '')}.`,
+            `2. Lead with real proof: ${mid || end}`,
+            '3. Repeat weekly with zero fluff.',
+          ];
+        }
+        return [
+          `${post.compLeftTitle} vs. ${post.compRightTitle} comes down to 2 rules:`,
+          `• Old way: ${post.compLeftStat}`,
+          `• New way: ${post.compRightStat}`,
+          end || mid || 'Systems beat willpower every week.',
+        ];
+      }
+
+      if (voice.styleMode === 'contrarian') {
+        if (idx === 0) {
+          return [
+            'Unpopular truth:',
+            lead,
+            mid || 'Most people ignore it until their numbers drop.',
+            end || 'Cut the noise. Do what actually works.',
+          ];
+        }
+        return [
+          `${post.compLeftTitle} is a trap.`,
+          `Result: ${post.compLeftStat}.`,
+          `Switch to ${post.compRightTitle.toLowerCase()} → ${post.compRightStat}.`,
+        ];
+      }
+
+      // storyteller
+      if (idx === 0) {
+        return [
+          'Something clicked for me this week.',
+          lead,
+          mid || 'Nobody talks about this part honestly.',
+          end || 'Have you noticed the same shift lately?',
+        ];
+      }
+      return [
+        'Quick real-world contrast from this week:',
+        `Before: ${post.compLeftTitle} (${post.compLeftStat}).`,
+        `After: ${post.compRightTitle} (${post.compRightStat}).`,
+      ];
+    }
+
+    function transformCarouselHookForVoice(baseHook, voice) {
+      if (voice.styleMode === 'own') return baseHook;
+      if (voice.styleMode === 'tactical') return `Steal the 5-step breakdown: ${baseHook}`;
+      if (voice.styleMode === 'contrarian') return `Most people get this backwards. ${baseHook}`;
+      return `A quick story turned into 5 slides: ${baseHook}`;
+    }
+
+    function renderStep9Posts() {
+      const cfg = getActiveConfig();
+      const posts = state.hasWebsite ? cfg.postsWebsite : cfg.postsPersonal;
+      const domain = getCleanDomain();
+      const badgeLetter = state.hasWebsite ? domain.charAt(0).toUpperCase() : 'AF';
+      const footerLabel = state.hasWebsite ? domain : getDisplayRole();
+      const vStyle = getVisualContainerStyle();
+      const activeVoice = getActiveVoiceObject();
+      const voiceLabel = activeVoice.id === 'own' ? 'Your own voice' : `${activeVoice.name}’s style`;
+
+      document.getElementById('step9-sub').textContent =
+        `Written in ${voiceLabel} · ${state.visualTheme} visuals.`;
+
+      const grid = document.getElementById('posts-grid');
+      grid.innerHTML = '';
+
+      // Card 1 & Card 2 (Post Text + Attached Visual Graphic!)
+      posts.forEach((p, idx) => {
+        const styledLines = transformPostLinesForVoice(p, idx, activeVoice);
+        const card = document.createElement('div');
+        card.className = 'anim bg-white border border-rule rounded-2xl p-5 flex flex-col justify-between';
+
+        let visualHTML = '';
+        if (p.visualType === 'quote_card') {
+          visualHTML = `
+            <div class="mt-3.5 rounded-xl p-4 flex flex-col justify-between min-h-[145px]" style="background:${vStyle.bg}; color:${vStyle.fg}; border:${vStyle.border};">
+              <div class="flex items-center justify-between text-[10px]" style="color:${vStyle.sub};">
+                <span class="font-semibold uppercase tracking-wider">Quote Graphic</span>
+                <span class="w-5 h-5 rounded-full text-[10px] font-serif font-bold flex items-center justify-center" style="background:${vStyle.accentBg}; color:${vStyle.accentFg};">${badgeLetter}</span>
+              </div>
+              <div class="serif-heading text-[17px] leading-snug my-2">${p.quoteHeadline}</div>
+              <div class="text-[10px] flex items-center justify-between pt-1.5 border-t border-current/15" style="color:${vStyle.sub};">
+                <span>${footerLabel}</span>
+                <span>LinkedIn Image · 1200×1200</span>
+              </div>
+            </div>
+          `;
+        } else {
+          visualHTML = `
+            <div class="mt-3.5 rounded-xl p-3.5 flex flex-col justify-between min-h-[145px]" style="background:${vStyle.bg}; color:${vStyle.fg}; border:${vStyle.border};">
+              <div class="flex items-center justify-between text-[10px] mb-2" style="color:${vStyle.sub};">
+                <span class="font-semibold uppercase tracking-wider">Framework Visual</span>
+                <span>Infographic · 4:5</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 my-1">
+                <div class="rounded-lg p-2.5 bg-black/15">
+                  <div class="text-[9px] uppercase opacity-75">✕ Old Way</div>
+                  <div class="text-[11px] font-semibold mt-0.5 leading-tight">${p.compLeftTitle}</div>
+                  <div class="text-[10px] opacity-80 mt-1 leading-tight">${p.compLeftStat}</div>
+                </div>
+                <div class="rounded-lg p-2.5" style="background:${vStyle.accentBg}; color:${vStyle.accentFg};">
+                  <div class="text-[9px] uppercase opacity-75">✓ New Way</div>
+                  <div class="text-[11px] font-semibold mt-0.5 leading-tight">${p.compRightTitle}</div>
+                  <div class="text-[10px] opacity-85 mt-1 leading-tight">${p.compRightStat}</div>
+                </div>
+              </div>
+              <div class="text-[9px] text-right mt-1" style="color:${vStyle.sub};">${footerLabel}</div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-1.5 mb-2.5">
+              <span class="text-[11px] font-semibold text-cobalt truncate">${p.tag}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-surface text-inkSoft shrink-0">+ Image</span>
+            </div>
+            <div class="post-copy text-xs text-ink leading-relaxed space-y-1.5"></div>
+            ${visualHTML}
+          </div>
+          <div class="mt-4 pt-3 border-t border-rule flex gap-2">
+            <button onclick="toast('Post + Graphic scheduled to LinkedIn via Zernio!')" class="flex-1 py-2.5 bg-ink hover:bg-cobalt text-paper text-xs font-medium rounded-lg transition-colors">
+              Post / Schedule
+            </button>
+            <button onclick="toast('Opened Post + Graphic in Studio')" class="px-3 py-2.5 border border-rule text-xs rounded-lg hover:border-ink">
+              Edit
+            </button>
+          </div>
+        `;
+
+        const copyBox = card.querySelector('.post-copy');
+        styledLines.forEach((line, li) => {
+          const para = document.createElement('p');
+          if (li === 0) para.className = 'font-medium';
+          para.textContent = line;
+          copyBox.appendChild(para);
+        });
+        grid.appendChild(card);
+      });
+
+      // Card 3: Post Copy + Interactive 5-Slide PDF Carousel!
+      const slides = cfg.carouselSlides;
+      const styledCarouselHook = transformCarouselHookForVoice(cfg.carouselHook, activeVoice);
+      const carouselCard = document.createElement('div');
+      carouselCard.className = 'anim bg-white border border-rule rounded-2xl p-5 flex flex-col justify-between';
+      carouselCard.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between gap-1.5 mb-2.5">
+            <span class="text-[11px] font-semibold text-emerald-800 truncate">03 · Post + 5-Slide PDF Carousel</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 shrink-0">Swipeable PDF</span>
+          </div>
+          <div class="text-xs text-ink leading-relaxed space-y-1.5">
+            <p class="font-medium">${styledCarouselHook}</p>
+            <p class="text-inkSoft">Save this 5-slide breakdown for your next launch.</p>
+          </div>
+
+          <!-- Interactive Swipeable Carousel Visual -->
+          <div class="mt-3.5 rounded-xl p-4 flex flex-col justify-between min-h-[145px] transition-colors" style="background:${vStyle.bg}; color:${vStyle.fg}; border:${vStyle.border};">
+            <div class="flex justify-between items-center text-[10px]" style="color:${vStyle.sub};">
+              <span id="slide-counter-label">Slide 1 of ${slides.length}</span>
+              <span class="w-5 h-5 rounded-full text-[10px] font-serif font-bold flex items-center justify-center" style="background:${vStyle.accentBg}; color:${vStyle.accentFg};">${badgeLetter}</span>
+            </div>
+            <div id="carousel-slide-text" class="serif-heading text-[18px] leading-snug my-2">${slides[activeSlideIdx]}</div>
+            <div class="flex items-center justify-between text-[10px] pt-1.5 border-t border-current/15" style="color:${vStyle.sub};">
+              <span>${footerLabel}</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="stepCarouselSlide(-1)" class="px-1.5 py-0.5 rounded bg-black/15 hover:bg-black/25">←</button>
+                <button type="button" onclick="stepCarouselSlide(1)" class="px-1.5 py-0.5 rounded bg-black/15 hover:bg-black/25">Swipe →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-rule flex gap-2">
+          <button onclick="toast('Post + 5-Slide PDF Carousel scheduled via Zernio!')" class="flex-1 py-2.5 bg-ink hover:bg-cobalt text-paper text-xs font-medium rounded-lg transition-colors">
+            Post / Schedule
+          </button>
+          <button onclick="toast('Opened 5-Slide PDF Carousel in Studio')" class="px-3 py-2.5 border border-rule text-xs rounded-lg hover:border-ink">
+            Edit
+          </button>
+        </div>
+      `;
+      grid.appendChild(carouselCard);
+    }
+
+    function stepCarouselSlide(dir) {
+      const slides = getActiveConfig().carouselSlides;
+      activeSlideIdx = (activeSlideIdx + dir + slides.length) % slides.length;
+      document.getElementById('slide-counter-label').textContent = `Slide ${activeSlideIdx + 1} of ${slides.length}`;
+      const txtEl = document.getElementById('carousel-slide-text');
+      txtEl.textContent = slides[activeSlideIdx];
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo(txtEl, { opacity: 0.3, x: dir * 10 }, { opacity: 1, x: 0, duration: 0.2 });
+      }
+    }
+
+    // ==================== CONVERSATIONAL INTERVIEW ACTIONS ====================
+    function triggerInterviewTurn() {
+      if (isListening) return;
+      isListening = true;
+
+      const cfg = getActiveConfig();
+      const iv = cfg.interview;
+      const orb = document.getElementById('orb-main');
+      const label = document.getElementById('orb-action-label');
+      const helper = document.getElementById('orb-helper');
+
+      orb.classList.remove('orb-ai');
+      orb.classList.add('orb-user');
+      label.textContent = 'Listening...';
+      helper.textContent = 'Speak naturally—your ghostwriter is listening...';
+
+      if (typeof gsap !== 'undefined') {
+        barsAnim = gsap.to('.vbar', {
+          scaleY: () => gsap.utils.random(0.5, 2.0),
+          duration: 0.18,
+          repeat: -1,
+          yoyo: true,
+          stagger: 0.04,
+        });
+      }
+
+      if (interviewTurn === 1) {
+        state.spokenAnswer1 = iv.a1;
+        streamAnswer('user-bubble-1', 'user-text-1', iv.a1, () => {
+          stopOrbAnim();
+          helper.textContent = 'AI Ghostwriter is asking 1 quick follow-up...';
+          setTimeout(() => {
+            const ai2 = document.getElementById('ai-bubble-2');
+            ai2.classList.remove('hidden');
+            document.getElementById('chat-feed').scrollTop = document.getElementById('chat-feed').scrollHeight;
+            interviewTurn = 2;
+            label.textContent = 'Tap to Reply';
+            helper.textContent = 'Tap the circle to answer the AI’s follow-up question.';
+            renderQuickPills(iv.pills2);
+          }, 450);
+        });
+      } else {
+        state.spokenAnswer2 = iv.a2;
+        streamAnswer('user-bubble-2', 'user-text-2', iv.a2, () => {
+          stopOrbAnim();
+          label.textContent = 'Done ✓';
+          helper.textContent = 'Story captured & background scan 100% finished!';
+          toast('Story captured — click "Bring Everything Together →"');
+        });
+      }
+    }
+
+    function useQuickVoicePill(text) {
+      if (isListening) return;
+      const cfg = getActiveConfig();
+      const feed = document.getElementById('chat-feed');
+
+      if (interviewTurn === 1) {
+        state.spokenAnswer1 = text;
+        document.getElementById('user-text-1').textContent = text;
+        document.getElementById('user-bubble-1').classList.remove('hidden');
+        feed.scrollTop = feed.scrollHeight;
+        setTimeout(() => {
+          document.getElementById('ai-bubble-2').classList.remove('hidden');
+          feed.scrollTop = feed.scrollHeight;
+          interviewTurn = 2;
+          document.getElementById('orb-action-label').textContent = 'Tap to Reply';
+          document.getElementById('orb-helper').textContent = 'Answer the follow-up question by voice—or tap below.';
+          renderQuickPills(cfg.interview.pills2);
+        }, 380);
+      } else {
+        state.spokenAnswer2 = text;
+        document.getElementById('user-text-2').textContent = text;
+        document.getElementById('user-bubble-2').classList.remove('hidden');
+        feed.scrollTop = feed.scrollHeight;
+        document.getElementById('orb-action-label').textContent = 'Done ✓';
+        document.getElementById('orb-helper').textContent = 'Story captured & scan finished! Click next below.';
+      }
+    }
+
+    function streamAnswer(bubbleId, textId, fullText, onDone) {
+      const bubble = document.getElementById(bubbleId);
+      const textEl = document.getElementById(textId);
+      const feed = document.getElementById('chat-feed');
+      bubble.classList.remove('hidden');
+      textEl.textContent = '';
+
+      const words = fullText.split(' ');
+      let i = 0;
+      const timer = setInterval(() => {
+        if (!isListening || i >= words.length) {
+          clearInterval(timer);
+          if (i >= words.length && onDone) onDone();
+          return;
+        }
+        textEl.textContent += (i === 0 ? '' : ' ') + words[i];
+        feed.scrollTop = feed.scrollHeight;
+        i++;
+      }, 75);
+    }
+
+    function stopOrbAnim() {
+      isListening = false;
+      const orb = document.getElementById('orb-main');
+      if (orb) {
+        orb.classList.remove('orb-user');
+        orb.classList.add('orb-ai');
+      }
+      if (barsAnim) {
+        barsAnim.kill();
+        if (typeof gsap !== 'undefined') gsap.to('.vbar', { scaleY: 1, duration: 0.2 });
+      }
+    }
+
+    // ==================== NAVIGATION ====================
+    function goToStep(step, instant = false) {
+      stopOrbAnim();
+      const prev = document.getElementById(`step-${currentStep}`);
+      const next = document.getElementById(`step-${step}`);
+
+      if (step === 2) renderStep2Goals();
+      if (step === 4) applyStep4UI();
+      if (step === 5) renderStep5VibesAndPeeves();
+      if (step === 7) renderStep7Interview();
+      if (step === 8) renderStep8Proof();
+      if (step === 9) renderStep9Posts();
+
+      prev.classList.remove('active');
+      next.classList.add('active');
+      currentStep = step;
+      updateProgress(step);
+
+      if (!instant && typeof gsap !== 'undefined') {
+        const els = next.querySelectorAll('.anim');
+        gsap.killTweensOf(els);
+        gsap.fromTo(
+          els,
+          { opacity: 1, y: 10 },
+          { opacity: 1, y: 0, duration: 0.24, stagger: 0.03, ease: 'power2.out', overwrite: true, clearProps: 'all' }
+        );
+      }
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(t);
+        gsap.fromTo(t, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.25 });
+        gsap.to(t, { opacity: 0, delay: 2.2, duration: 0.25 });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      const params = new URLSearchParams(hash);
+      const icpParam = params.get('icp');
+      const webParam = params.get('web');
+      const stepParam = Number(params.get('step')) || 1;
+
+      if (icpParam && ICP_CONFIG[icpParam]) {
+        const card = document.querySelector(`.icp-card[data-icp="${icpParam}"]`);
+        selectICP(icpParam, card);
+      } else {
+        selectICP('founder', document.querySelector('.icp-card[data-icp="founder"]'));
+      }
+
+      if (webParam === '0' || webParam === 'false') setWebsiteMode(false);
+      if (webParam === '1' || webParam === 'true') setWebsiteMode(true);
+
+      if (stepParam !== 1) goToStep(stepParam, true);
+      else updateProgress(1);
+    });
+  </script>
+</body>
+</html>
