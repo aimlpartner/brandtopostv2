@@ -136,9 +136,10 @@ export default function Home() {
                   <p className="text-[13px] text-ink-soft leading-relaxed">
                     Full daily LinkedIn operating system: Guided AI &amp; Manual
                     post composer, LinkedIn mobile previews, Visual Studio
-                    carousel editor, Voice Capture &amp; executive phone links,
-                    Inspiration swipe file, Writing Styles, Calendar, Team
-                    Advocacy, Brain, Company Brand &amp; Analytics/MCP.
+                    carousel editor, Voice Capture (record, phone links &amp;
+                    Daily AI Phone Call), Inspiration swipe file, Writing
+                    Styles, Calendar, Team Posts, My Brain, Company Brand &amp;
+                    Analytics/MCP.
                   </p>
                 </div>
 

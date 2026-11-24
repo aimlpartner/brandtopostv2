@@ -206,19 +206,44 @@
   <!-- ======================================================================= -->
   <aside class="w-[236px] shrink-0 h-full bg-sidebar border-r border-rule flex flex-col justify-between select-none">
     <div class="flex flex-col min-h-0 flex-1">
-      <!-- Workspace Switcher -->
-      <div class="h-14 px-3.5 border-b border-rule/80 flex items-center justify-between gap-2">
-        <button type="button" onclick="toggleWorkspaceAccount()" class="flex items-center gap-2.5 min-w-0 hover:bg-surface/80 px-1.5 py-1 rounded-lg transition-colors flex-1 text-left">
-          <div id="ws-avatar" class="w-7 h-7 rounded-lg bg-ink text-paper text-[11px] font-semibold flex items-center justify-center shrink-0">AF</div>
+      <!-- Connected Personal LinkedIn Profile -->
+      <div class="relative h-14 px-3.5 border-b border-rule/80 flex items-center justify-between gap-2" data-dropdown>
+        <button type="button" onclick="toggleCustomMenu('ws-account-menu')" class="flex items-center gap-2.5 min-w-0 hover:bg-surface/80 px-1.5 py-1 rounded-lg transition-colors flex-1 text-left">
+          <div id="ws-avatar" class="w-7 h-7 rounded-full overflow-hidden bg-ink text-paper text-[11px] font-semibold flex items-center justify-center shrink-0">
+            <img src="https://i.pravatar.cc/120?img=68" alt="Arjun Mehta" class="w-full h-full object-cover" />
+          </div>
           <div class="min-w-0 flex-1">
-            <div id="ws-name" class="text-[13px] font-semibold text-ink truncate leading-tight">Arjun · Personal</div>
+            <div id="ws-name" class="text-[13px] font-semibold text-ink truncate leading-tight">Arjun Mehta</div>
             <div class="flex items-center gap-1.5 text-[11px] text-muted leading-tight mt-0.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-              <span id="ws-sub" class="truncate">LinkedIn synced</span>
+              <span id="ws-sub" class="truncate">LinkedIn connected</span>
             </div>
           </div>
           <svg class="w-3.5 h-3.5 text-muted shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
         </button>
+
+        <!-- Clean Personal Profile / Client Workspace Popover (People Only — No Company Pages) -->
+        <div id="ws-account-menu" class="custom-menu hidden absolute left-3 top-[52px] w-[236px] bg-white border border-rule rounded-xl shadow-xl py-1.5 z-50">
+          <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">LinkedIn Profile</div>
+          <div class="px-3 py-2 bg-surface/80 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="https://i.pravatar.cc/120?img=68" alt="Arjun Mehta" class="w-7 h-7 rounded-full object-cover shrink-0 border border-rule" />
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-ink truncate">Arjun Mehta</div>
+                <div class="text-[10.5px] text-muted truncate">linkedin.com/in/arjunmehta</div>
+              </div>
+            </div>
+            <span class="text-xs font-semibold text-ink shrink-0">✓</span>
+          </div>
+          <div class="mt-1 pt-1 border-t border-rule px-2 space-y-0.5">
+            <button type="button" onclick="closeAllCustomMenus(); switchView('brain');" class="w-full text-left px-2 py-1.5 rounded-lg text-xs text-inkSoft hover:text-ink hover:bg-surface/70 transition-colors">
+              Edit My Brain →
+            </button>
+            <button type="button" onclick="closeAllCustomMenus(); toast('Agency & Team plans let you add additional executive profiles');" class="w-full text-left px-2 py-1.5 rounded-lg text-[11px] text-muted hover:text-ink hover:bg-surface/70 transition-colors">
+              + Add another person (Team / Client)
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Primary Action -->
@@ -271,7 +296,7 @@
             </button>
             <button type="button" data-view="team" onclick="switchView('team')" class="nav-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Team Advocacy</span>
+              <span>Team Posts</span>
             </button>
           </div>
         </div>
@@ -506,13 +531,18 @@
     <!-- ===================================================================== -->
     <section id="view-voice" class="view-panel">
       <header class="h-14 px-7 border-b border-rule bg-paper flex items-center justify-between gap-4 shrink-0">
-        <div class="flex items-center gap-4 min-w-0">
+        <div class="flex items-center gap-4 min-w-0 flex-wrap">
           <h1 class="text-[15px] font-semibold text-ink shrink-0">Voice Capture</h1>
-          <!-- Prominent Left-Aligned 2-Mode Switcher (Zero Confusion) -->
+          <!-- Prominent Left-Aligned 3-Mode Switcher (Zero Confusion) -->
           <div class="inline-flex bg-surface p-0.5 rounded-lg border border-rule/80 shrink-0">
             <button type="button" id="voice-mode-self" onclick="setVoiceMode('self')" class="px-3 py-1 rounded-md text-xs font-medium bg-ink text-paper flex items-center gap-1.5 transition-colors">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
               <span>Record Yourself</span>
+            </button>
+            <button type="button" id="voice-mode-call" onclick="setVoiceMode('call')" class="px-3 py-1 rounded-md text-xs font-medium text-inkSoft hover:text-ink flex items-center gap-1.5 transition-colors">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>Daily AI Phone Call</span>
+              <span id="voice-call-nav-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             </button>
             <button type="button" id="voice-mode-link" onclick="setVoiceMode('link')" class="px-3 py-1 rounded-md text-xs font-medium text-inkSoft hover:text-ink flex items-center gap-1.5 transition-colors">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -520,17 +550,29 @@
             </button>
           </div>
         </div>
-        <span class="hidden md:inline text-xs text-emerald-700 font-medium shrink-0">Unlimited · Free on all plans</span>
+        <span class="hidden lg:inline text-xs text-emerald-700 font-medium shrink-0">Unlimited · Free on all plans</span>
       </header>
 
       <!-- Full-Bleed Un-Boxed 2-Pane Split -->
       <div class="flex-1 flex min-h-0 overflow-hidden">
-        <!-- Left Rail: New Session + Past Recordings + 3-Step Guide -->
+        <!-- Left Rail: New Session + Daily Call Autopilot Status + Past Recordings -->
         <aside class="w-[276px] shrink-0 border-r border-rule bg-paper p-4 overflow-y-auto flex flex-col justify-between">
-          <div class="space-y-5">
+          <div class="space-y-4">
             <button type="button" onclick="resetVoiceInterview()" class="w-full py-2 px-3 rounded-lg border border-rule bg-white hover:border-ink text-xs font-medium text-ink flex items-center justify-center gap-1.5 transition-colors">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
               <span>New voice interview</span>
+            </button>
+
+            <!-- Compact Autopilot Call Status Row -->
+            <button type="button" onclick="setVoiceMode('call')" class="w-full text-left py-2.5 px-2.5 border-y border-rule/80 hover:bg-surface/60 transition-colors flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                  <span id="rail-call-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+                  <span>Daily AI Call</span>
+                </div>
+                <div id="rail-call-summary" class="text-[11px] text-muted mt-0.5 truncate">08:15 AM → Auto-post 09:30 AM</div>
+              </div>
+              <span class="text-[11px] text-cobalt font-medium shrink-0">Edit</span>
             </button>
 
             <div class="space-y-1">
@@ -742,6 +784,151 @@
                       <div class="text-[10px] text-muted">Transcribed automatically via Deepgram</div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- =========================================================== -->
+            <!-- MODE 3: DAILY AI PHONE CALL (Calm, Minimal Linear Settings) -->
+            <!-- =========================================================== -->
+            <div id="voice-panel-call" class="hidden max-w-2xl space-y-6">
+              <!-- Simple 1-Line Header + Master Toggle -->
+              <div class="pb-5 border-b border-rule flex items-center justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-semibold text-ink">Daily AI Phone Call</h2>
+                  <p class="text-xs text-muted mt-0.5">We call your phone for 2 minutes, draft your post, and publish it to LinkedIn automatically.</p>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0">
+                  <span id="autopilot-status-text" class="text-xs font-medium text-emerald-700">On</span>
+                  <button id="autopilot-call-toggle" type="button" onclick="toggleDailyCallAutopilot()" aria-pressed="true" class="w-10 h-5 rounded-full bg-ink transition-colors relative">
+                    <span id="autopilot-toggle-knob" class="block w-3.5 h-3.5 rounded-full bg-white shadow-sm transform translate-x-5 transition-transform"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 5 Calm Horizontal Setting Rows (Zero Flashbang, Zero Clutter) -->
+              <div class="divide-y divide-rule/80 border-b border-rule">
+
+                <!-- Row 1: Phone Number -->
+                <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div class="sm:col-span-4">
+                    <div class="text-xs font-medium text-ink">Phone number</div>
+                    <div id="call-phone-verified-badge" class="text-[11px] text-emerald-700 mt-0.5">✓ Verified</div>
+                  </div>
+                  <div class="sm:col-span-8 flex items-center gap-2">
+                    <div class="relative shrink-0" data-dropdown>
+                      <button type="button" onclick="toggleCustomMenu('call-cc-menu')" class="clean-input rounded-lg px-2.5 py-2 text-xs font-mono text-ink bg-white flex items-center gap-1">
+                        <span id="call-cc-label">+91</span>
+                        <svg class="w-3 h-3 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                      </button>
+                      <div id="call-cc-menu" class="custom-menu hidden absolute left-0 top-full mt-1.5 w-32 bg-white border border-rule rounded-xl shadow-lg py-1 z-40 text-xs font-mono">
+                        <button type="button" onclick="setCallCountryCode('+91')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">+91 IN</button>
+                        <button type="button" onclick="setCallCountryCode('+1')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">+1 US</button>
+                        <button type="button" onclick="setCallCountryCode('+44')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">+44 UK</button>
+                        <button type="button" onclick="setCallCountryCode('+971')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">+971 AE</button>
+                        <button type="button" onclick="setCallCountryCode('+61')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">+61 AU</button>
+                      </div>
+                    </div>
+                    <input
+                      id="daily-call-phone"
+                      type="tel"
+                      value="98765 43210"
+                      oninput="onCallPhoneChange()"
+                      placeholder="98765 43210"
+                      class="clean-input flex-1 rounded-lg px-3 py-2 text-xs font-mono text-ink bg-white"
+                    />
+                    <button type="button" id="call-verify-btn" onclick="verifyCallPhoneNumber()" class="text-xs text-muted hover:text-ink px-2 shrink-0">
+                      Verify
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Row 2: Daily Call Time & Days -->
+                <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div class="sm:col-span-4">
+                    <div class="text-xs font-medium text-ink">Call schedule</div>
+                    <div class="text-[11px] text-muted mt-0.5">Time (IST) &amp; active days</div>
+                  </div>
+                  <div class="sm:col-span-8 flex flex-wrap items-center gap-3">
+                    <input id="daily-call-time" type="time" value="08:15" onchange="syncDailyCallPreview()" class="clean-input rounded-lg px-3 py-2 text-xs font-mono text-ink bg-white w-32" />
+                    <div id="daily-call-days" class="flex items-center gap-1"></div>
+                  </div>
+                </div>
+
+                <!-- Row 3: Missed Call Retry (Single Clean Custom Dropdown) -->
+                <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div class="sm:col-span-4">
+                    <div class="text-xs font-medium text-ink">If I miss the call</div>
+                    <div class="text-[11px] text-muted mt-0.5">Max 2 retries · no spam</div>
+                  </div>
+                  <div class="sm:col-span-8">
+                    <div class="relative inline-block" data-dropdown>
+                      <button type="button" onclick="toggleCustomMenu('call-retry-menu')" class="clean-input rounded-lg px-3 py-2 text-xs text-ink bg-white flex items-center justify-between gap-4 min-w-[200px]">
+                        <span id="call-retry-label">Call again in 30 minutes</span>
+                        <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                      </button>
+                      <div id="call-retry-menu" class="custom-menu hidden absolute left-0 top-full mt-1.5 w-52 bg-white border border-rule rounded-xl shadow-lg py-1 z-40 text-xs">
+                        <button type="button" onclick="setCallRetryMins(15, 'Call again in 15 minutes')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">Call again in 15 minutes</button>
+                        <button type="button" onclick="setCallRetryMins(30, 'Call again in 30 minutes')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink font-medium">Call again in 30 minutes</button>
+                        <button type="button" onclick="setCallRetryMins(60, 'Call again in 1 hour')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">Call again in 1 hour</button>
+                        <button type="button" onclick="setCallRetryMins(0, 'Skip today')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">Skip today</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 4: Auto-Publish Time & Mode -->
+                <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div class="sm:col-span-4">
+                    <div class="text-xs font-medium text-ink">Auto-post to LinkedIn</div>
+                    <div class="text-[11px] text-muted mt-0.5">Uploaded via Zernio</div>
+                  </div>
+                  <div class="sm:col-span-8 flex flex-wrap items-center gap-2.5">
+                    <input id="daily-publish-time" type="time" value="09:30" onchange="syncDailyCallPreview()" class="clean-input rounded-lg px-3 py-2 text-xs font-mono text-ink bg-white w-32" />
+                    <div class="relative" data-dropdown>
+                      <button type="button" onclick="toggleCustomMenu('call-pubmode-menu')" class="clean-input rounded-lg px-3 py-2 text-xs text-ink bg-white flex items-center justify-between gap-3">
+                        <span id="call-pubmode-label">Publish automatically</span>
+                        <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                      </button>
+                      <div id="call-pubmode-menu" class="custom-menu hidden absolute left-0 top-full mt-1.5 w-60 bg-white border border-rule rounded-xl shadow-lg py-1 z-40 text-xs">
+                        <button type="button" onclick="setCallPublishMode('auto', 'Publish automatically')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink font-medium">Publish automatically</button>
+                        <button type="button" onclick="setCallPublishMode('sms', 'SMS preview first (15m cancel)')" class="w-full text-left px-3 py-1.5 hover:bg-surface text-ink">SMS preview first (15m cancel)</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 5: Auto Visual -->
+                <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div class="sm:col-span-4">
+                    <div class="text-xs font-medium text-ink">Post visual</div>
+                    <div class="text-[11px] text-muted mt-0.5">Optional bespoke graphic</div>
+                  </div>
+                  <div class="sm:col-span-8">
+                    <label class="inline-flex items-center gap-2 text-xs text-inkSoft cursor-pointer">
+                      <input id="daily-call-auto-visual" type="checkbox" checked onchange="syncDailyCallPreview()" class="accent-ink" />
+                      <span>Auto-generate visual based on what I say</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quiet 1-Line Live Summary + Clean Actions -->
+              <div class="space-y-4">
+                <div id="daily-call-summary-line" class="text-xs text-inkSoft leading-relaxed">
+                  Calls <strong class="text-ink">+91 98765 43210</strong> Mon–Fri at <strong class="text-ink">08:15 AM</strong> (retries in 30m if missed) → publishes to LinkedIn at <strong class="text-ink">09:30 AM</strong>.
+                </div>
+
+                <!-- Inline Live Simulation Status (Hidden until Test Call clicked) -->
+                <div id="daily-call-sim-banner" class="hidden text-xs text-inkSoft border-l-2 border-cobalt pl-3 py-0.5"></div>
+
+                <div class="flex items-center gap-3">
+                  <button type="button" onclick="saveDailyCallSettings()" class="px-4 py-2 rounded-lg bg-ink hover:bg-cobalt text-paper text-xs font-medium transition-colors">
+                    Save schedule
+                  </button>
+                  <button type="button" id="sim-daily-call-btn" onclick="simulateDailyAiPhoneCall()" class="px-3.5 py-2 rounded-lg border border-rule bg-white hover:border-ink text-xs font-medium text-inkSoft hover:text-ink transition-colors">
+                    Test call now
+                  </button>
                 </div>
               </div>
             </div>
@@ -1070,37 +1257,81 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- VIEW 7: TEAM ADVOCACY (1-to-N Adaptation + Inline Review Comments)    -->
+    <!-- VIEW 7: TEAM POSTS (Plain-English 2-Step 1-to-N Teammate Posts)       -->
     <!-- ===================================================================== -->
     <section id="view-team" class="view-panel">
-      <header class="h-14 px-6 border-b border-rule bg-paper flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-          <h1 class="text-[15px] font-semibold text-ink">Team Advocacy</h1>
-          <span class="text-xs text-muted">1 company update → unique drafts matched to each teammate’s voice</span>
+      <header class="h-14 px-7 border-b border-rule bg-paper flex items-center justify-between gap-4 shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <h1 class="text-[15px] font-semibold text-ink shrink-0">Team Posts</h1>
+          <span class="hidden sm:inline text-xs text-muted truncate">Write 1 company update → get a unique LinkedIn post for each teammate in their own voice</span>
         </div>
-        <button type="button" onclick="copyText('https://brandtopost.com/review/t9x4k1', 'No-login team review link copied!')" class="px-3 py-1.5 bg-white border border-rule hover:border-ink text-xs font-medium rounded-lg">
-          Copy no-login review link
-        </button>
+
+        <!-- + Add Teammate Popover -->
+        <div class="relative shrink-0" data-dropdown>
+          <button type="button" onclick="toggleCustomMenu('team-add-member-menu')" class="px-3 py-1.5 bg-white border border-rule hover:border-ink text-xs font-medium rounded-lg text-ink transition-colors">
+            + Add teammate
+          </button>
+          <div id="team-add-member-menu" class="custom-menu hidden absolute right-0 top-full mt-1.5 w-64 bg-white border border-rule rounded-xl shadow-lg p-3.5 space-y-2.5 z-40">
+            <div class="text-xs font-semibold text-ink">Add a teammate</div>
+            <form onsubmit="addTeamMember(event)" class="space-y-2">
+              <input id="team-new-name" type="text" required placeholder="Full name (e.g., Priya Shah)" class="clean-input w-full rounded-lg px-2.5 py-1.5 text-xs text-ink" />
+              <input id="team-new-role" type="text" required placeholder="Role (e.g., Head of Sales)" class="clean-input w-full rounded-lg px-2.5 py-1.5 text-xs text-ink" />
+              <button type="submit" class="w-full py-1.5 bg-ink hover:bg-cobalt text-paper text-xs font-medium rounded-lg">Add to team</button>
+            </form>
+          </div>
+        </div>
       </header>
 
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="max-w-5xl mx-auto space-y-5">
-          <!-- Master Company Update -->
-          <div class="bg-white border border-rule rounded-xl p-5 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-ink">Master Company Announcement</span>
-              <span class="text-[11px] text-muted">Locked facts: Launch Nov 25 · brandtopost.com · Free MCP tier</span>
+      <div class="flex-1 overflow-y-auto px-7 py-6 bg-paper">
+        <div class="max-w-[1440px] mx-auto space-y-8">
+
+          <!-- STEP 1: WRITE 1 UPDATE & PICK TEAMMATES (Flush, Un-Boxed) -->
+          <div class="pb-7 border-b border-rule space-y-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="text-xs font-semibold text-ink">1. What do you want your team to post about?</div>
+              <div class="flex items-center gap-3 text-[11px] text-muted">
+                <span>Examples:</span>
+                <button type="button" onclick="loadTeamPromptExample('launch')" class="text-inkSoft hover:text-ink underline underline-offset-2">Product launch</button>
+                <button type="button" onclick="loadTeamPromptExample('hiring')" class="text-inkSoft hover:text-ink underline underline-offset-2">We’re hiring</button>
+                <button type="button" onclick="loadTeamPromptExample('milestone')" class="text-inkSoft hover:text-ink underline underline-offset-2">Customer win</button>
+              </div>
             </div>
-            <textarea id="team-master-input" rows="2" class="clean-input w-full rounded-lg px-3 py-2 text-[13px] text-ink resize-none">BrandToPost 1.0 launches Nov 25 with unlimited free voice interviews, brand-locked PDF carousels, and a free ChatGPT/Claude MCP server at brandtopost.com.</textarea>
-            <div class="flex justify-end">
-              <button type="button" onclick="adaptForTeam()" class="px-4 py-2 bg-ink hover:bg-cobalt text-paper text-xs font-medium rounded-lg transition-colors">
-                Adapt for 3 teammates
+
+            <textarea
+              id="team-master-input"
+              rows="2"
+              placeholder="Write the news in 1–2 plain sentences (launch, milestone, hiring, or event)..."
+              class="clean-input w-full rounded-lg px-4 py-3 text-[13.5px] leading-relaxed text-ink bg-white resize-none"
+            >BrandToPost 1.0 launches Nov 25 with unlimited free voice interviews, bespoke LinkedIn visuals, and a free ChatGPT/Claude MCP server at brandtopost.com.</textarea>
+
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-1">
+              <!-- Clickable Teammate Selector Chips -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs text-muted mr-1">Who should post:</span>
+                <div id="team-member-toggles" class="flex flex-wrap items-center gap-1.5"></div>
+              </div>
+
+              <button id="team-generate-btn" type="button" onclick="adaptForTeam()" class="px-5 py-2 bg-ink hover:bg-cobalt text-paper text-xs font-semibold rounded-lg transition-colors shrink-0">
+                Write 3 unique posts →
               </button>
             </div>
           </div>
 
-          <!-- 3 Unique Adapted Employee Drafts -->
-          <div id="team-adapted-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+          <!-- STEP 2: REVIEW & SEND EACH TEAMMATE THEIR POST (Full-Width Un-Boxed Columns) -->
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold text-ink">2. Review &amp; send each teammate their post</div>
+                <div class="text-[11px] text-muted mt-0.5">Click any post to edit directly — each person gets a different angle so your team never looks copy-pasted.</div>
+              </div>
+              <button type="button" onclick="copyText('https://brandtopost.com/review/t9x4k1', 'Copied no-login approval link for all teammates!')" class="text-xs font-medium text-cobalt hover:underline shrink-0">
+                Copy approval link for everyone (no login)
+              </button>
+            </div>
+
+            <div id="team-adapted-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7 items-start"></div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -2367,9 +2598,9 @@ Measure the actual bottleneck before rewriting the system.</p>
           </button>
         </div>
 
-        <div id="an-header-mcp-controls" class="hidden flex items-center gap-2 text-xs text-emerald-700 font-medium shrink-0">
-          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-          <span>MCP Active · Included on $0 Free Plan</span>
+        <div id="an-header-mcp-controls" class="hidden flex items-center gap-1.5 text-xs text-muted shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span>Active · Free</span>
         </div>
       </header>
 
@@ -2401,16 +2632,12 @@ Measure the actual bottleneck before rewriting the system.</p>
                 <div class="text-[11px] font-semibold uppercase tracking-wider text-muted">What’s Actually Working For You</div>
                 <div class="space-y-3.5 text-xs">
                   <div>
-                    <div class="flex justify-between mb-1"><span class="font-medium text-ink">PDF Carousels</span><span class="font-mono text-emerald-700 font-semibold">3.8× · 21.4k avg</span></div>
+                    <div class="flex justify-between mb-1"><span class="font-medium text-ink">Multi-Slide PDFs</span><span class="font-mono text-emerald-700 font-semibold">3.8× · 21.4k avg</span></div>
                     <div class="h-1.5 bg-surface rounded-full overflow-hidden"><div class="h-full bg-ink w-[94%]"></div></div>
                   </div>
                   <div>
-                    <div class="flex justify-between mb-1"><span class="font-medium text-ink">Comparison Cards</span><span class="font-mono text-inkSoft">2.6× · 14.9k avg</span></div>
+                    <div class="flex justify-between mb-1"><span class="font-medium text-ink">Single Visuals</span><span class="font-mono text-inkSoft">2.6× · 14.9k avg</span></div>
                     <div class="h-1.5 bg-surface rounded-full overflow-hidden"><div class="h-full bg-ink/75 w-[68%]"></div></div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between mb-1"><span class="font-medium text-ink">Quote Graphics</span><span class="font-mono text-inkSoft">2.1× · 11.2k avg</span></div>
-                    <div class="h-1.5 bg-surface rounded-full overflow-hidden"><div class="h-full bg-ink/55 w-[52%]"></div></div>
                   </div>
                   <div>
                     <div class="flex justify-between mb-1"><span class="font-medium text-ink">Text-Only Posts</span><span class="font-mono text-muted">1.0× · 5.6k avg</span></div>
@@ -2466,88 +2693,103 @@ Measure the actual bottleneck before rewriting the system.</p>
         </div>
 
         <!-- =============================================================== -->
-        <!-- TAB 2: CONNECT CHATGPT / CLAUDE / CURSOR (Plain-English MCP)    -->
+        <!-- TAB 2: CONNECT CHATGPT / CLAUDE (Calm, Minimal Linear Settings) -->
         <!-- =============================================================== -->
-        <div id="an-panel-mcp" class="hidden max-w-5xl space-y-9">
-          <div class="pb-6 border-b border-rule space-y-2">
-            <div class="text-[11px] font-mono uppercase tracking-[0.14em] text-cobalt">Free Remote MCP Bridge · OAuth 2.1 PKCE</div>
-            <h2 class="serif-display text-4xl font-medium text-ink leading-tight">Write &amp; plan LinkedIn posts directly inside ChatGPT, Claude, or Cursor.</h2>
-            <p class="text-[13px] text-inkSoft max-w-2xl leading-relaxed">
-              Instead of copy-pasting your voice guidelines into ChatGPT every day, connect BrandToPost once. Your AI assistant automatically reads your <strong>My Brain</strong>, <strong>Company Brand DNA</strong>, and <strong>Calendar</strong> — and always asks before publishing anything live.
-            </p>
+        <div id="an-panel-mcp" class="hidden max-w-2xl mx-auto py-2 space-y-6">
+          <!-- Quiet 1-Line Header -->
+          <div class="pb-5 border-b border-rule flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-ink">Connect ChatGPT or Claude</h2>
+              <p class="text-xs text-muted mt-0.5">Write and plan LinkedIn posts from your AI chat app using your real voice and calendar.</p>
+            </div>
+            <button type="button" onclick="toast('Connection active for Arjun Mehta')" class="px-3 py-1.5 rounded-lg border border-rule bg-white hover:border-ink text-xs font-medium text-inkSoft hover:text-ink transition-colors shrink-0">
+              Test
+            </button>
           </div>
 
-          <!-- Step 1: Copy Personal Endpoint (Flush Un-Boxed Row) -->
-          <div class="pb-7 border-b border-rule space-y-3">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-muted">Step 1 · Copy Your Personal BrandToPost MCP URL</div>
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 max-w-2xl">
-              <div class="flex-1 px-4 py-2.5 rounded-lg bg-white border border-rule font-mono text-xs text-ink flex items-center justify-between gap-2">
-                <span>https://mcp.brandtopost.com/mcp</span>
-                <span class="text-[10px] font-sans text-emerald-700 font-medium">● Ready</span>
+          <!-- 4 Calm Horizontal Setting Rows (Zero Flashbang, Fits Above Fold) -->
+          <div class="divide-y divide-rule/80 border-b border-rule">
+
+            <!-- Row 1: Connection URL -->
+            <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div class="sm:col-span-4">
+                <div class="text-xs font-medium text-ink">Connection URL</div>
+                <div class="text-[11px] text-muted mt-0.5">Paste into your AI app</div>
               </div>
-              <button type="button" onclick="copyText('https://mcp.brandtopost.com/mcp', 'Copied BrandToPost MCP URL!')" class="px-4 py-2.5 rounded-lg bg-ink hover:bg-cobalt text-paper text-xs font-semibold transition-colors shrink-0">
-                Copy URL
-              </button>
-              <button type="button" onclick="toast('Handshake OK · OAuth 2.1 PKCE active for Arjun Mehta')" class="px-4 py-2.5 rounded-lg border border-rule bg-white hover:border-ink text-xs font-medium text-ink transition-colors shrink-0">
-                Test connection
-              </button>
+              <div class="sm:col-span-8 flex items-center gap-2">
+                <div class="flex-1 px-3 py-2 rounded-lg bg-white border border-rule font-mono text-xs text-ink truncate">
+                  https://mcp.brandtopost.com/mcp
+                </div>
+                <button type="button" onclick="copyText('https://mcp.brandtopost.com/mcp', 'Copied URL!')" class="px-3.5 py-2 rounded-lg bg-ink hover:bg-cobalt text-paper text-xs font-medium transition-colors shrink-0">
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Row 2: App Setup -->
+            <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+              <div class="sm:col-span-4 pt-1">
+                <div class="text-xs font-medium text-ink">Setup guide</div>
+                <div class="text-[11px] text-muted mt-0.5">Takes 30 seconds</div>
+              </div>
+              <div class="sm:col-span-8 space-y-3">
+                <div class="inline-flex bg-surface p-0.5 rounded-lg border border-rule/80 text-xs">
+                  <button type="button" data-mcpapp="claude" onclick="setMcpClientTab('claude')" class="mcp-app-btn px-3 py-1 rounded-md font-medium bg-white text-ink shadow-sm">Claude</button>
+                  <button type="button" data-mcpapp="chatgpt" onclick="setMcpClientTab('chatgpt')" class="mcp-app-btn px-3 py-1 rounded-md font-medium text-inkSoft hover:text-ink">ChatGPT</button>
+                  <button type="button" data-mcpapp="cursor" onclick="setMcpClientTab('cursor')" class="mcp-app-btn px-3 py-1 rounded-md font-medium text-inkSoft hover:text-ink">Cursor</button>
+                </div>
+                <div id="mcp-setup-steps" class="text-xs text-inkSoft leading-relaxed"></div>
+              </div>
+            </div>
+
+            <!-- Row 3: Permissions -->
+            <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+              <div class="sm:col-span-4">
+                <div class="text-xs font-medium text-ink">Safety</div>
+                <div class="text-[11px] text-muted mt-0.5">What your AI can do</div>
+              </div>
+              <div class="sm:col-span-8 space-y-1.5 text-xs text-inkSoft">
+                <div class="flex items-center gap-2">
+                  <span class="text-emerald-700 font-medium">✓</span>
+                  <span>Reads your My Brain, Brand DNA, and analytics</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-emerald-700 font-medium">✓</span>
+                  <span>Creates drafts and adds safe Planned idea slots</span>
+                </div>
+                <div class="flex items-center gap-2 text-ink">
+                  <span class="text-amber-700 font-medium">!</span>
+                  <span>Never posts live to LinkedIn or deletes without your click</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: Example Prompts -->
+            <div class="py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+              <div class="sm:col-span-4 pt-1">
+                <div class="text-xs font-medium text-ink">Try asking</div>
+                <div class="text-[11px] text-muted mt-0.5">Click any prompt to copy</div>
+              </div>
+              <div class="sm:col-span-8 divide-y divide-rule/60 text-xs">
+                <button type="button" onclick="copyText('Draft 2 LinkedIn posts from my Story Vault in my real voice.', 'Prompt copied!')" class="w-full py-2 flex items-center justify-between gap-3 text-left text-inkSoft hover:text-ink transition-colors group">
+                  <span>“Draft 2 LinkedIn posts from my Story Vault in my real voice.”</span>
+                  <span class="text-[11px] text-muted group-hover:text-ink shrink-0">Copy</span>
+                </button>
+                <button type="button" onclick="copyText('Plan 2 post ideas on my calendar for Tuesday and Thursday next week.', 'Prompt copied!')" class="w-full py-2 flex items-center justify-between gap-3 text-left text-inkSoft hover:text-ink transition-colors group">
+                  <span>“Plan 2 post ideas on my calendar for Tuesday and Thursday.”</span>
+                  <span class="text-[11px] text-muted group-hover:text-ink shrink-0">Copy</span>
+                </button>
+                <button type="button" onclick="copyText('Look at my last 30 days on LinkedIn and tell me which post format got the most profile visits.', 'Prompt copied!')" class="w-full py-2 flex items-center justify-between gap-3 text-left text-inkSoft hover:text-ink transition-colors group">
+                  <span>“Which post format got me the most profile visits this month?”</span>
+                  <span class="text-[11px] text-muted group-hover:text-ink shrink-0">Copy</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Step 2: Interactive 3-Step Setup by App (Claude | ChatGPT | Cursor) -->
-          <div class="pb-7 border-b border-rule space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-muted">Step 2 · Pick Where You Want to Connect It</div>
-              <div class="inline-flex bg-surface p-0.5 rounded-lg border border-rule/80 text-xs">
-                <button type="button" data-mcpapp="claude" onclick="setMcpClientTab('claude')" class="mcp-app-btn px-3 py-1 rounded-md font-medium bg-ink text-paper">Claude</button>
-                <button type="button" data-mcpapp="chatgpt" onclick="setMcpClientTab('chatgpt')" class="mcp-app-btn px-3 py-1 rounded-md font-medium text-inkSoft hover:text-ink">ChatGPT</button>
-                <button type="button" data-mcpapp="cursor" onclick="setMcpClientTab('cursor')" class="mcp-app-btn px-3 py-1 rounded-md font-medium text-inkSoft hover:text-ink">Cursor</button>
-              </div>
-            </div>
-            <div id="mcp-setup-steps" class="space-y-3 text-[13px] text-inkSoft"></div>
-          </div>
-
-          <!-- Step 3: Real Things You Can Ask Your AI (Click to Copy) -->
-          <div class="pb-7 border-b border-rule space-y-3">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-muted">Step 3 · Try Asking Claude or ChatGPT Any of These (Click to Copy)</div>
-            <div class="divide-y divide-rule/70 border-y border-rule text-[13px]">
-              <button type="button" onclick="copyText('Read my Story Vault in My Brain and draft 2 LinkedIn posts about our pricing fix in my real voice.', 'Prompt copied!')" class="w-full py-3 flex items-center justify-between gap-4 text-left hover:bg-surface/40 px-2 transition-colors">
-                <span class="text-ink">“Read my Story Vault in My Brain and draft 2 LinkedIn posts about our pricing fix in my real voice.”</span>
-                <span class="text-xs font-medium text-cobalt shrink-0">Copy</span>
-              </button>
-              <button type="button" onclick="copyText('Check my LinkedIn calendar for next week and place 2 safe Planned idea slots on Tuesday and Thursday.', 'Prompt copied!')" class="w-full py-3 flex items-center justify-between gap-4 text-left hover:bg-surface/40 px-2 transition-colors">
-                <span class="text-ink">“Check my LinkedIn calendar for next week and place 2 safe Planned idea slots on Tuesday and Thursday.”</span>
-                <span class="text-xs font-medium text-cobalt shrink-0">Copy</span>
-              </button>
-              <button type="button" onclick="copyText('Review my last 30 days of Zernio analytics and tell me which hook format drove the most profile visits.', 'Prompt copied!')" class="w-full py-3 flex items-center justify-between gap-4 text-left hover:bg-surface/40 px-2 transition-colors">
-                <span class="text-ink">“Review my last 30 days of Zernio analytics and tell me which hook format drove the most profile visits.”</span>
-                <span class="text-xs font-medium text-cobalt shrink-0">Copy</span>
-              </button>
-              <button type="button" onclick="copyText('Check my latest draft against my Hard Guardrails and strip any em dashes, emojis, or AI clichés.', 'Prompt copied!')" class="w-full py-3 flex items-center justify-between gap-4 text-left hover:bg-surface/40 px-2 transition-colors">
-                <span class="text-ink">“Check my latest draft against my Hard Guardrails and strip any em dashes, emojis, or AI clichés.”</span>
-                <span class="text-xs font-medium text-cobalt shrink-0">Copy</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Safety Guardrails (3 Borderless Editorial Columns) -->
-          <div class="space-y-3">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-muted">Built-In Safety Guardrails (Zero Accidental Publishing)</div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-1 text-[13px]">
-              <div class="space-y-1">
-                <div class="font-semibold text-ink">01 · Read-Only (Automatic)</div>
-                <p class="text-xs text-inkSoft leading-relaxed">Reads your My Brain, Company Brand DNA, Calendar, and Zernio analytics so drafts stay accurate.</p>
-              </div>
-              <div class="space-y-1">
-                <div class="font-semibold text-ink">02 · Draft-Write (Automatic)</div>
-                <p class="text-xs text-inkSoft leading-relaxed">Creates new drafts, adds inline review notes, and places safe inert <strong>Planned</strong> slots on your calendar.</p>
-              </div>
-              <div class="space-y-1">
-                <div class="font-semibold text-amber-800">03 · Confirm Required (Locked)</div>
-                <p class="text-xs text-inkSoft leading-relaxed">Publishing live to LinkedIn or deleting any draft <strong>always</strong> requires your explicit click approval.</p>
-              </div>
-            </div>
-          </div>
+          <p class="text-[11px] text-muted">
+            Included free on all plans. Sign-in uses standard OAuth and can be revoked anytime.
+          </p>
         </div>
       </div>
     </section>
@@ -2803,7 +3045,7 @@ Measure the actual bottleneck before rewriting the system.</p>
 
         <label class="flex items-center gap-2 text-xs text-inkSoft cursor-pointer pt-1">
           <input id="cal-plan-repost" type="checkbox" checked class="accent-ink" />
-          <span>Auto-schedule +2h delayed repost via Zernio</span>
+          <span>Auto-post first comment (+1 min) with link / CTA</span>
         </label>
 
         <div class="pt-3 border-t border-rule flex items-center justify-between gap-2">
@@ -2821,7 +3063,7 @@ Measure the actual bottleneck before rewriting the system.</p>
   </div>
 
   <!-- ======================================================================= -->
-  <!-- SCHEDULE MODAL (Planned vs Scheduled + Delayed Team Repost Cascade)     -->
+  <!-- SCHEDULE MODAL (Personal LinkedIn Scheduling + Auto First Comment)      -->
   <!-- ======================================================================= -->
   <div id="schedule-modal" class="hidden fixed inset-0 z-50 bg-ink/30 flex items-center justify-center p-4">
     <div class="bg-white border border-rule rounded-xl max-w-md w-full p-5 space-y-4 shadow-lg">
@@ -2845,8 +3087,8 @@ Measure the actual bottleneck before rewriting the system.</p>
         <label class="flex items-start gap-2.5 p-3 rounded-lg bg-paper border border-rule cursor-pointer">
           <input id="sched-repost-chk" type="checkbox" checked class="mt-0.5 accent-ink" />
           <div>
-            <div class="font-medium text-ink">Delayed Company Page Repost (+2 hours)</div>
-            <div class="text-[11px] text-muted mt-0.5">Auto-reposts from BrandToPost Company Page once live (`follows_parent`).</div>
+            <div class="font-medium text-ink">Auto-post first comment (+1 min)</div>
+            <div class="text-[11px] text-muted mt-0.5">Drops your link or CTA in the first comment once live so LinkedIn doesn’t cut reach.</div>
           </div>
         </label>
       </div>
@@ -2867,7 +3109,6 @@ Measure the actual bottleneck before rewriting the system.</p>
   <script>
     const appState = {
       view: 'write',
-      accountMode: 'personal', // 'personal' | 'company'
       brandBlend: true,
       hasCompanyBrand: true,
       activeStyleId: 'own',
@@ -2953,6 +3194,10 @@ Measure the actual bottleneck before rewriting the system.</p>
         visualSub: 'Profiled query plan before touching infrastructure.',
       },
     ];
+
+    function getActivePosts() {
+      return USER_POSTS;
+    }
 
     const WRITING_STYLES = [
       {
@@ -3343,7 +3588,7 @@ Measure the actual bottleneck before rewriting the system.</p>
         status: 'scheduled',
         visual: 'Multi-Slide PDF',
         voice: 'My own voice',
-        meta: 'Multi-Slide PDF · +2h Repost',
+        meta: 'Multi-Slide PDF · Auto 1st Comment',
         repost: true,
       },
       {
@@ -3408,6 +3653,10 @@ Measure the actual bottleneck before rewriting the system.</p>
       },
     ];
 
+    function getActiveCalendarEvents() {
+      return CALENDAR_EVENTS;
+    }
+
     const calState = {
       view: 'month', // month | week | day | agenda | status | list
       year: 2026,
@@ -3433,28 +3682,43 @@ Measure the actual bottleneck before rewriting the system.</p>
 
     const TEAM_MEMBERS = [
       {
+        id: 'tm-1',
         name: 'Arjun Mehta',
-        role: 'Founder / CEO',
-        initials: 'AF',
+        firstName: 'Arjun',
+        role: 'Founder',
+        angle: 'Founder story angle',
+        avatar: 'https://i.pravatar.cc/120?img=68',
+        initials: 'AM',
         bg: '#121210',
-        comment: 'Looks sharp. Keep the free MCP mention in line 4.',
-        draft: 'We built BrandToPost because founders drop gold on sales calls and freeze on blank docs.\n\nOn Nov 25 we launch 1.0: unlimited voice interviews, brand-locked PDF carousels, and a free ChatGPT/Claude MCP server.\n\nTry it at brandtopost.com.',
+        selected: true,
+        sent: false,
+        draft: 'We built BrandToPost because founders drop gold on sales calls and freeze on blank docs.\n\nOn Nov 25 we launch 1.0: unlimited voice interviews, bespoke LinkedIn visuals, and a free ChatGPT/Claude MCP server.\n\nTry it at brandtopost.com.',
       },
       {
+        id: 'tm-2',
         name: 'Rohan Iyer',
+        firstName: 'Rohan',
         role: 'CTO',
+        angle: 'Engineering angle',
+        avatar: 'https://i.pravatar.cc/120?img=11',
         initials: 'RI',
         bg: '#134E8E',
-        comment: 'Confirmed technical accuracy on HTML-to-PDF carousels.',
-        draft: 'Most AI image generators butcher text on LinkedIn carousels.\n\nSo for our Nov 25 launch of BrandToPost 1.0, we rendered carousels via deterministic HTML-to-PDF locked to exact brand hex codes, plus shipped a free OAuth PKCE MCP endpoint.\n\nDetails at brandtopost.com.',
+        selected: true,
+        sent: false,
+        draft: 'Most AI visual tools butcher text and slap the same 3 templates on every LinkedIn post.\n\nFor our Nov 25 launch of BrandToPost 1.0, we built a concept-driven visual renderer locked to brand colors plus a free OAuth PKCE MCP endpoint.\n\nDetails at brandtopost.com.',
       },
       {
+        id: 'tm-3',
         name: 'Meera Nair',
+        firstName: 'Meera',
         role: 'Head of Growth',
+        angle: 'Marketing & team angle',
+        avatar: 'https://i.pravatar.cc/120?img=32',
         initials: 'MN',
         bg: '#1B4332',
-        comment: 'Can we mention no-login CEO links in the first comment?',
-        draft: 'Every marketing team has the same bottleneck: chasing busy executives for LinkedIn content.\n\nNov 25 we open BrandToPost 1.0 with unlimited voice interviews, instant brand carousels, and free Claude/ChatGPT MCP access.\n\nSee how teams run it at brandtopost.com.',
+        selected: true,
+        sent: false,
+        draft: 'Every marketing team hits the same wall: chasing busy executives for LinkedIn posts every week.\n\nNov 25 we open BrandToPost 1.0 with daily AI phone calls, instant brand visuals, and free Claude/ChatGPT MCP access.\n\nSee how teams run it at brandtopost.com.',
       },
     ];
 
@@ -3478,19 +3742,6 @@ Measure the actual bottleneck before rewriting the system.</p>
       if (viewId === 'brain') initUserBrainData();
       if (viewId === 'company') syncCompanyBrandUI();
       if (viewId === 'analytics') renderAnalyticsView();
-    }
-
-    function toggleWorkspaceAccount() {
-      if (!appState.hasCompanyBrand) {
-        toast('Personal-only mode active — connect a Company Brand in sidebar to add a Company Page');
-        return;
-      }
-      appState.accountMode = appState.accountMode === 'personal' ? 'company' : 'personal';
-      const isPersonal = appState.accountMode === 'personal';
-      document.getElementById('ws-avatar').textContent = isPersonal ? 'AF' : 'BP';
-      document.getElementById('ws-name').textContent = isPersonal ? 'Arjun · Personal' : 'BrandToPost · Page';
-      document.getElementById('ws-sub').textContent = isPersonal ? 'LinkedIn synced' : 'Company Page synced';
-      toast(isPersonal ? 'Switched to Arjun (Personal Profile)' : 'Switched to BrandToPost (Company Page)');
     }
 
     function startFreshDraft() {
@@ -4091,17 +4342,11 @@ Measure the actual bottleneck before rewriting the system.</p>
         toggleBtn.textContent = hasBrand ? 'Switch to Personal-Only (No Brand)' : 'Connect Demo Company Brand';
       }
 
-      if (!hasBrand && appState.accountMode === 'company') {
-        appState.accountMode = 'personal';
-        document.getElementById('ws-avatar').textContent = 'AF';
-        document.getElementById('ws-name').textContent = 'Arjun · Personal';
-        document.getElementById('ws-sub').textContent = 'LinkedIn synced';
-      }
-
       renderDnaCrawledPages();
       renderDnaVerifiedStats();
       renderBrandDocs();
       renderTopicSuggestions();
+      renderUserPostsGrid();
     }
 
     function toggleHasCompanyBrand() {
@@ -4251,10 +4496,11 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function renderUserPostsGrid() {
+      const activeList = getActivePosts();
       const countEl = document.getElementById('posts-count-all');
-      if (countEl) countEl.textContent = USER_POSTS.length;
+      if (countEl) countEl.textContent = activeList.length;
 
-      const filtered = USER_POSTS.filter((p) => {
+      const filtered = activeList.filter((p) => {
         if (appState.postsFilter === 'all') return true;
         return p.status === appState.postsFilter;
       });
@@ -4494,7 +4740,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     ];
 
     function openPostEditor(postId) {
-      const post = USER_POSTS.find((p) => p.id === postId);
+      const post = getActivePosts().find((p) => p.id === postId);
       if (!post) return;
       appState.editingPostId = postId;
       document.getElementById('post-editor-textarea').value = post.body;
@@ -4555,14 +4801,14 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function savePostEditor(newStatus) {
-      const post = USER_POSTS.find((p) => p.id === appState.editingPostId);
+      const post = getActivePosts().find((p) => p.id === appState.editingPostId);
       if (post) {
         post.body = document.getElementById('post-editor-textarea').value.trim();
         post.firstComment = document.getElementById('first-comment-input').value.trim();
         if (newStatus === 'planned') {
           post.status = 'planned';
           post.statusLabel = 'Planned · Idea slot';
-          CALENDAR_EVENTS.push({
+          getActiveCalendarEvents().push({
             id: 'c-' + Date.now(),
             date: '2026-11-24',
             time: 'Idea slot',
@@ -4587,14 +4833,15 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function openScheduleModal(postId) {
-      appState.schedulingPostId = postId || (USER_POSTS[0] && USER_POSTS[0].id);
+      const list = getActivePosts();
+      appState.schedulingPostId = postId || (list[0] && list[0].id);
       document.getElementById('schedule-modal').classList.remove('hidden');
     }
     function closeScheduleModal() {
       document.getElementById('schedule-modal').classList.add('hidden');
     }
     function confirmSchedulePost() {
-      const post = USER_POSTS.find((p) => p.id === appState.schedulingPostId);
+      const post = getActivePosts().find((p) => p.id === appState.schedulingPostId);
       const timeVal = document.getElementById('sched-time').value;
       if (post) {
         post.status = 'scheduled';
@@ -4602,7 +4849,8 @@ Measure the actual bottleneck before rewriting the system.</p>
         const dateEl = document.getElementById('sched-date');
         const schedDate = (dateEl && dateEl.value) ? dateEl.value : '2026-11-24';
         const hr = parseInt(timeVal.split(':')[0], 10) || 9;
-        CALENDAR_EVENTS.push({
+        const autoComment = Boolean(document.getElementById('sched-repost-chk')?.checked);
+        getActiveCalendarEvents().push({
           id: 'c-' + Date.now(),
           date: schedDate,
           time: timeVal,
@@ -4611,8 +4859,8 @@ Measure the actual bottleneck before rewriting the system.</p>
           status: 'scheduled',
           visual: (post.visualType === 'deck' || post.visualType === 'carousel') ? 'Multi-Slide PDF' : post.visualType === 'none' ? 'Text only' : 'Single Visual',
           voice: post.voiceName || 'My own voice',
-          meta: 'Zernio queued · +2h Repost',
-          repost: true,
+          meta: autoComment ? 'Zernio queued · Auto 1st Comment' : 'Zernio queued',
+          repost: autoComment,
         });
         updateCalendarSidebarBadge();
       }
@@ -4740,7 +4988,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     ];
 
     const voiceState = {
-      mode: 'self', // 'self' | 'link'
+      mode: 'self', // 'self' | 'call' | 'link'
       subState: 'ready', // 'ready' | 'live' | 'result'
       promptIdx: 0,
       qIdx: 0,
@@ -4750,29 +4998,273 @@ Measure the actual bottleneck before rewriting the system.</p>
       capturedLines: [],
     };
 
+    const dailyCallState = {
+      enabled: true,
+      cc: '+91',
+      phone: '98765 43210',
+      verified: true,
+      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      callTime: '08:15',
+      retryMins: 30,
+      publishMode: 'auto', // 'auto' | 'sms'
+      publishTime: '09:30',
+      autoVisual: true,
+    };
+
+    function format24To12(hhmm) {
+      if (!hhmm || !hhmm.includes(':')) return '08:15 AM';
+      const [hRaw, mRaw] = hhmm.split(':').map(Number);
+      const ampm = hRaw >= 12 ? 'PM' : 'AM';
+      const h12 = hRaw % 12 || 12;
+      return `${String(h12).padStart(2, '0')}:${String(mRaw).padStart(2, '0')} ${ampm}`;
+    }
+
+    function addMinutesTo24(hhmm, addMins) {
+      if (!hhmm || !hhmm.includes(':')) return '08:45 AM';
+      const [h, m] = hhmm.split(':').map(Number);
+      const total = (h * 60 + m + addMins) % (24 * 60);
+      const nh = Math.floor(total / 60);
+      const nm = total % 60;
+      return format24To12(`${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`);
+    }
+
     function initVoiceView() {
       renderVoiceTopicList();
       renderVoiceRecordingsRail();
+      renderDailyCallDays();
+      syncDailyCallPreview();
       syncPhoneLinkPreview();
     }
 
     function setVoiceMode(mode) {
       voiceState.mode = mode;
-      const selfBtn = document.getElementById('voice-mode-self');
-      const linkBtn = document.getElementById('voice-mode-link');
-      if (selfBtn) {
-        selfBtn.className = mode === 'self'
-          ? 'px-3 py-1 rounded-md text-xs font-medium bg-ink text-paper flex items-center gap-1.5 transition-colors'
-          : 'px-3 py-1 rounded-md text-xs font-medium text-inkSoft hover:text-ink flex items-center gap-1.5 transition-colors';
-      }
-      if (linkBtn) {
-        linkBtn.className = mode === 'link'
-          ? 'px-3 py-1 rounded-md text-xs font-medium bg-ink text-paper flex items-center gap-1.5 transition-colors'
-          : 'px-3 py-1 rounded-md text-xs font-medium text-inkSoft hover:text-ink flex items-center gap-1.5 transition-colors';
-      }
-      document.getElementById('voice-panel-self').classList.toggle('hidden', mode !== 'self');
-      document.getElementById('voice-panel-link').classList.toggle('hidden', mode !== 'link');
+      const modes = [
+        { key: 'self', id: 'voice-mode-self', panel: 'voice-panel-self' },
+        { key: 'call', id: 'voice-mode-call', panel: 'voice-panel-call' },
+        { key: 'link', id: 'voice-mode-link', panel: 'voice-panel-link' },
+      ];
+      modes.forEach((m) => {
+        const btn = document.getElementById(m.id);
+        const panel = document.getElementById(m.panel);
+        if (btn) {
+          btn.className = mode === m.key
+            ? 'px-3 py-1 rounded-md text-xs font-medium bg-ink text-paper flex items-center gap-1.5 transition-colors'
+            : 'px-3 py-1 rounded-md text-xs font-medium text-inkSoft hover:text-ink flex items-center gap-1.5 transition-colors';
+        }
+        if (panel) panel.classList.toggle('hidden', mode !== m.key);
+      });
       if (mode === 'link') syncPhoneLinkPreview();
+      if (mode === 'call') { renderDailyCallDays(); syncDailyCallPreview(); }
+    }
+
+    function toggleDailyCallAutopilot() {
+      dailyCallState.enabled = !dailyCallState.enabled;
+      const btn = document.getElementById('autopilot-call-toggle');
+      const knob = document.getElementById('autopilot-toggle-knob');
+      const txt = document.getElementById('autopilot-status-text');
+      const navDot = document.getElementById('voice-call-nav-dot');
+      const railDot = document.getElementById('rail-call-dot');
+      if (btn) {
+        btn.className = dailyCallState.enabled
+          ? 'w-10 h-5 rounded-full bg-ink transition-colors relative'
+          : 'w-10 h-5 rounded-full bg-rule transition-colors relative';
+        btn.setAttribute('aria-pressed', String(dailyCallState.enabled));
+      }
+      if (knob) knob.style.transform = dailyCallState.enabled ? 'translateX(20px)' : 'translateX(2px)';
+      if (txt) {
+        txt.textContent = dailyCallState.enabled ? 'On' : 'Off';
+        txt.className = dailyCallState.enabled ? 'text-xs font-medium text-emerald-700' : 'text-xs font-medium text-muted';
+      }
+      if (navDot) navDot.classList.toggle('hidden', !dailyCallState.enabled);
+      if (railDot) railDot.className = dailyCallState.enabled ? 'w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0' : 'w-1.5 h-1.5 rounded-full bg-muted shrink-0';
+      syncDailyCallPreview();
+      toast(dailyCallState.enabled ? 'Daily AI Phone Call enabled' : 'Daily AI Phone Call paused');
+    }
+
+    function setCallCountryCode(cc) {
+      dailyCallState.cc = cc;
+      const lbl = document.getElementById('call-cc-label');
+      if (lbl) lbl.textContent = cc;
+      closeAllCustomMenus();
+      syncDailyCallPreview();
+    }
+
+    function onCallPhoneChange() {
+      const inp = document.getElementById('daily-call-phone');
+      dailyCallState.phone = inp ? inp.value.trim() : '';
+      dailyCallState.verified = false;
+      const badge = document.getElementById('call-phone-verified-badge');
+      if (badge) { badge.textContent = 'Unverified'; badge.className = 'text-[11px] text-amber-700 mt-0.5'; }
+      syncDailyCallPreview();
+    }
+
+    function verifyCallPhoneNumber() {
+      const inp = document.getElementById('daily-call-phone');
+      if (!inp || !inp.value.trim()) {
+        toast('Enter your phone number first');
+        if (inp) inp.focus();
+        return;
+      }
+      dailyCallState.phone = inp.value.trim();
+      dailyCallState.verified = true;
+      const badge = document.getElementById('call-phone-verified-badge');
+      if (badge) { badge.textContent = '✓ Verified'; badge.className = 'text-[11px] text-emerald-700 mt-0.5'; }
+      syncDailyCallPreview();
+      toast(`Verified ${dailyCallState.cc} ${dailyCallState.phone} via SMS`);
+    }
+
+    function renderDailyCallDays() {
+      const wrap = document.getElementById('daily-call-days');
+      if (!wrap) return;
+      const allDays = [
+        { key: 'Mon', ch: 'M' }, { key: 'Tue', ch: 'T' }, { key: 'Wed', ch: 'W' },
+        { key: 'Thu', ch: 'T' }, { key: 'Fri', ch: 'F' }, { key: 'Sat', ch: 'S' }, { key: 'Sun', ch: 'S' },
+      ];
+      wrap.innerHTML = allDays.map((d) => {
+        const active = dailyCallState.days.includes(d.key);
+        return `
+          <button type="button" title="${d.key}" onclick="toggleCallDay('${d.key}')" class="w-7 h-7 rounded-full text-[11px] font-medium transition-colors border flex items-center justify-center ${active ? 'bg-ink text-paper border-ink' : 'bg-white text-muted border-rule hover:border-ink hover:text-ink'}">
+            ${d.ch}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleCallDay(day) {
+      if (dailyCallState.days.includes(day)) {
+        if (dailyCallState.days.length === 1) {
+          toast('Keep at least 1 day selected or toggle Off');
+          return;
+        }
+        dailyCallState.days = dailyCallState.days.filter((d) => d !== day);
+      } else {
+        dailyCallState.days.push(day);
+      }
+      renderDailyCallDays();
+      syncDailyCallPreview();
+    }
+
+    function setCallRetryMins(mins, label) {
+      dailyCallState.retryMins = mins;
+      const lbl = document.getElementById('call-retry-label');
+      if (lbl && label) lbl.textContent = label;
+      closeAllCustomMenus();
+      syncDailyCallPreview();
+    }
+
+    function setCallPublishMode(mode, label) {
+      dailyCallState.publishMode = mode;
+      const lbl = document.getElementById('call-pubmode-label');
+      if (lbl && label) lbl.textContent = label;
+      closeAllCustomMenus();
+      syncDailyCallPreview();
+    }
+
+    function syncDailyCallPreview() {
+      const ctInp = document.getElementById('daily-call-time');
+      const ptInp = document.getElementById('daily-publish-time');
+      const avInp = document.getElementById('daily-call-auto-visual');
+      if (ctInp && ctInp.value) dailyCallState.callTime = ctInp.value;
+      if (ptInp && ptInp.value) dailyCallState.publishTime = ptInp.value;
+      if (avInp) dailyCallState.autoVisual = avInp.checked;
+
+      const call12 = format24To12(dailyCallState.callTime);
+      const pub12 = format24To12(dailyCallState.publishTime);
+      const fullNum = `${dailyCallState.cc} ${dailyCallState.phone || '98765 43210'}`;
+      const daySummary = dailyCallState.days.length === 7 ? 'daily' : dailyCallState.days.length === 5 && !dailyCallState.days.includes('Sat') && !dailyCallState.days.includes('Sun') ? 'Mon–Fri' : dailyCallState.days.join(', ');
+
+      const railSum = document.getElementById('rail-call-summary');
+      if (railSum) railSum.textContent = dailyCallState.enabled ? `${call12} → Auto-post ${pub12}` : 'Paused';
+
+      const sumLine = document.getElementById('daily-call-summary-line');
+      if (sumLine) {
+        if (!dailyCallState.enabled) {
+          sumLine.innerHTML = 'Daily AI Phone Call is currently paused. Toggle <strong>On</strong> above to resume.';
+        } else {
+          const retryTxt = dailyCallState.retryMins > 0 ? `retries in ${dailyCallState.retryMins}m if missed` : 'skips day if missed';
+          const pubTxt = dailyCallState.publishMode === 'auto' ? `publishes to LinkedIn at <strong class="text-ink">${pub12}</strong>` : `texts preview, then publishes at <strong class="text-ink">${pub12}</strong>`;
+          sumLine.innerHTML = `Calls <strong class="text-ink">${fullNum}</strong> (${daySummary}) at <strong class="text-ink">${call12}</strong> (${retryTxt}) → ${pubTxt}.`;
+        }
+      }
+    }
+
+    function saveDailyCallSettings() {
+      if (!dailyCallState.phone) {
+        toast('Please enter your phone number first');
+        return;
+      }
+      syncDailyCallPreview();
+      toast(`Saved: calls at ${format24To12(dailyCallState.callTime)}, auto-posts at ${format24To12(dailyCallState.publishTime)}`);
+    }
+
+    function simulateDailyAiPhoneCall() {
+      const btn = document.getElementById('sim-daily-call-btn');
+      const banner = document.getElementById('daily-call-sim-banner');
+      if (btn) { btn.disabled = true; btn.textContent = 'Calling...'; }
+      if (banner) {
+        banner.classList.remove('hidden');
+        banner.textContent = `Ringing ${dailyCallState.cc} ${dailyCallState.phone}...`;
+      }
+
+      setTimeout(() => {
+        if (banner) banner.textContent = 'Connected · Capturing 2-min spoken thought & generating post...';
+      }, 1200);
+
+      setTimeout(() => {
+        const pub12 = format24To12(dailyCallState.publishTime);
+        const body = 'A prospect asked today why our onboarding feels so fast.\n\nThe honest answer: we deleted 6 pointless setup questions and let people talk for 2 minutes instead.\n\nMost friction in B2B software is not technical. It is asking users to fill forms they never wanted to type.';
+        const conceptSpec = inventVisualConceptFromPost(body, 'Why deleting 6 setup questions made onboarding feel 3× faster', 'Replaced forms with a 2-minute spoken capture', dailyCallState.autoVisual ? 'auto' : 'none', '');
+
+        USER_POSTS.unshift({
+          id: 'p-call-' + Date.now(),
+          status: 'scheduled',
+          statusLabel: `Auto-Scheduled · ${pub12}`,
+          voiceName: (WRITING_STYLES.find((s) => s.id === appState.activeStyleId) || WRITING_STYLES[0]).name,
+          body,
+          firstComment: '',
+          visualType: conceptSpec.visualType,
+          visualLayout: conceptSpec.visualLayout,
+          visualConcept: conceptSpec.visualConcept,
+          visualBg: conceptSpec.visualBg,
+          visualDarkText: conceptSpec.visualDarkText,
+          visualHeadline: 'Deleting 6 setup questions beat adding more features.',
+          visualSub: 'Captured via Daily AI Phone Call',
+        });
+
+        const hr = parseInt(dailyCallState.publishTime.split(':')[0], 10) || 9;
+        CALENDAR_EVENTS.push({
+          id: 'c-call-' + Date.now(),
+          date: TODAY_ISO,
+          time: pub12,
+          hour: hr,
+          title: 'Deleting 6 setup questions made onboarding 3× faster',
+          status: 'scheduled',
+          visual: conceptSpec.visualType === 'deck' ? 'Multi-Slide PDF' : conceptSpec.visualType === 'none' ? 'Text only' : 'Single Visual',
+          voice: (WRITING_STYLES.find((s) => s.id === appState.activeStyleId) || WRITING_STYLES[0]).name,
+          meta: 'Daily AI Phone Call · Auto-publish via Zernio',
+          repost: true,
+        });
+
+        VOICE_RECORDINGS.unshift({
+          id: 'rec-call-' + Date.now(),
+          title: 'Daily AI Call · Onboarding friction',
+          speaker: 'Arjun (Phone)',
+          source: `AI Phone Call · Auto-post ${pub12}`,
+          duration: '1m 36s',
+          transcript: body,
+          angles: [
+            { label: 'AUTO-SCHEDULED POST', hook: 'A prospect asked today why our onboarding feels so fast.', body },
+          ],
+        });
+
+        renderVoiceRecordingsRail();
+        updateCalendarSidebarBadge();
+        renderUserPostsGrid();
+
+        if (banner) banner.textContent = `Done — call transcribed and post auto-scheduled to LinkedIn for ${pub12} (added to Posts & Calendar).`;
+        if (btn) { btn.disabled = false; btn.textContent = 'Test call now'; }
+        toast(`Post auto-scheduled to LinkedIn for ${pub12}`);
+      }, 2600);
     }
 
     function setVoiceSubState(st) {
@@ -5165,7 +5657,7 @@ Measure the actual bottleneck before rewriting the system.</p>
         reimagineStudioConcept();
         return;
       }
-      const post = USER_POSTS.find((p) => p.id === appState.visualEditingPostId);
+      const post = getActivePosts().find((p) => p.id === appState.visualEditingPostId);
       const spec = inventVisualConceptFromPost(post ? post.body : '', '', '', appState.studioDelivery, prompt);
       appState.studioConcept = prompt;
       appState.studioLayout = spec.visualLayout;
@@ -5247,8 +5739,9 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function openVisualEditor(postId) {
-      appState.visualEditingPostId = postId || (USER_POSTS[0] && USER_POSTS[0].id);
-      const post = USER_POSTS.find((p) => p.id === appState.visualEditingPostId);
+      const list = getActivePosts();
+      appState.visualEditingPostId = postId || (list[0] && list[0].id);
+      const post = list.find((p) => p.id === appState.visualEditingPostId);
       if (post) {
         const delivery = (post.visualType === 'deck' || post.visualType === 'carousel') ? 'deck' : 'single';
         appState.studioDelivery = delivery;
@@ -5272,7 +5765,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function attachVisualToDraft() {
-      const post = USER_POSTS.find((p) => p.id === appState.visualEditingPostId);
+      const post = getActivePosts().find((p) => p.id === appState.visualEditingPostId);
       if (post) {
         const slide0 = appState.studioSlides[appState.studioSlideIdx] || appState.studioSlides[0];
         post.visualType = appState.studioDelivery;
@@ -5958,7 +6451,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function getFilteredCalendarEvents() {
-      return CALENDAR_EVENTS.filter((ev) => {
+      return getActiveCalendarEvents().filter((ev) => {
         if (calState.statusFilter !== 'all' && ev.status !== calState.statusFilter) return false;
         if (calState.visualFilter !== 'all' && ev.visual !== calState.visualFilter) return false;
         return true;
@@ -5968,7 +6461,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     function updateCalendarSidebarBadge() {
       const badge = document.getElementById('nav-sched-count');
       if (!badge) return;
-      const upcoming = CALENDAR_EVENTS.filter((e) => e.status === 'scheduled' || e.status === 'planned').length;
+      const upcoming = getActiveCalendarEvents().filter((e) => e.status === 'scheduled' || e.status === 'planned').length;
       badge.textContent = upcoming;
     }
 
@@ -6470,7 +6963,7 @@ Measure the actual bottleneck before rewriting the system.</p>
     }
 
     function toggleCalEventStatus(id) {
-      const ev = CALENDAR_EVENTS.find((x) => x.id === id);
+      const ev = getActiveCalendarEvents().find((x) => x.id === id);
       if (!ev) return;
       if (ev.status === 'scheduled') {
         ev.status = 'planned';
@@ -6479,7 +6972,7 @@ Measure the actual bottleneck before rewriting the system.</p>
       } else {
         ev.status = 'scheduled';
         ev.time = ev.time === 'Idea slot' ? '09:30 AM' : ev.time;
-        ev.meta = 'Zernio queued · +2h Repost';
+        ev.meta = ev.repost ? 'Zernio queued · Auto 1st Comment' : 'Zernio queued';
       }
       renderCalendar();
       toast(ev.status === 'scheduled' ? 'Confirmed for Zernio auto-publish' : 'Moved to safe inert Planned slot');
@@ -6520,9 +7013,11 @@ Measure the actual bottleneck before rewriting the system.</p>
 
     function openCalendarPlanModal(prefillDate = null, editEventId = null, prefillTime = null) {
       calState.editingEventId = editEventId || null;
-      const ev = editEventId ? CALENDAR_EVENTS.find((x) => x.id === editEventId) : null;
+      const ev = editEventId ? getActiveCalendarEvents().find((x) => x.id === editEventId) : null;
 
-      document.getElementById('cal-modal-title').textContent = ev ? 'Edit Calendar Post' : 'Plan a LinkedIn Post';
+      document.getElementById('cal-modal-title').textContent = ev
+        ? 'Edit Calendar Post'
+        : 'Plan a LinkedIn Post';
       document.getElementById('cal-plan-title').value = ev ? ev.title : '';
       document.getElementById('cal-plan-date').value = ev ? ev.date : (prefillDate || formatIsoDate(calState.year, calState.month, calState.day));
       document.getElementById('cal-plan-repost').checked = ev ? Boolean(ev.repost) : true;
@@ -6548,10 +7043,10 @@ Measure the actual bottleneck before rewriting the system.</p>
           : 'cal-vis-pill px-2.5 py-1 rounded-full text-[11px] font-medium bg-surface text-inkSoft hover:text-ink';
       });
 
-      // Quick pick from existing USER_POSTS drafts when planning a new slot
+      // Quick pick from active account drafts when planning a new slot
       const draftWrap = document.getElementById('cal-plan-draft-picks');
       if (draftWrap) {
-        draftWrap.innerHTML = ev ? '' : `<span class="text-[10px] text-muted">Pull draft:</span>` + USER_POSTS.slice(0, 3).map((p) => {
+        draftWrap.innerHTML = ev ? '' : `<span class="text-[10px] text-muted">Pull draft:</span>` + getActivePosts().slice(0, 3).map((p) => {
           const hook = p.body.split('\n')[0].replace(/'/g, '').slice(0, 42);
           return `<button type="button" onclick="document.getElementById('cal-plan-title').value='${hook}'" class="px-2 py-0.5 rounded-full bg-surface hover:bg-rule text-[10px] text-inkSoft hover:text-ink truncate max-w-[180px]">${hook}…</button>`;
         }).join('');
@@ -6574,9 +7069,10 @@ Measure the actual bottleneck before rewriting the system.</p>
 
       const parsedHour = parseInt((calState.planTime || '09:30').split(':')[0], 10) || 9;
       const finalHour = calState.planTime.includes('PM') && parsedHour < 12 ? parsedHour + 12 : parsedHour;
+      const eventsList = getActiveCalendarEvents();
 
       if (calState.editingEventId) {
-        const ev = CALENDAR_EVENTS.find((x) => x.id === calState.editingEventId);
+        const ev = eventsList.find((x) => x.id === calState.editingEventId);
         if (ev) {
           ev.title = title;
           ev.date = date;
@@ -6590,7 +7086,7 @@ Measure the actual bottleneck before rewriting the system.</p>
         toast('Updated calendar slot');
       } else {
         const activeStyle = WRITING_STYLES.find((s) => s.id === appState.activeStyleId) || WRITING_STYLES[0];
-        CALENDAR_EVENTS.push({
+        eventsList.push({
           id: 'c-' + Date.now(),
           date,
           time: calState.planStatus === 'planned' ? 'Idea slot' : (calState.planTime === 'Idea slot' ? '09:30 AM' : calState.planTime),
@@ -6617,8 +7113,9 @@ Measure the actual bottleneck before rewriting the system.</p>
 
     function deleteCalendarPlanEvent() {
       if (!calState.editingEventId) return;
-      const idx = CALENDAR_EVENTS.findIndex((x) => x.id === calState.editingEventId);
-      if (idx !== -1) CALENDAR_EVENTS.splice(idx, 1);
+      const eventsList = getActiveCalendarEvents();
+      const idx = eventsList.findIndex((x) => x.id === calState.editingEventId);
+      if (idx !== -1) eventsList.splice(idx, 1);
       closeCalendarPlanModal();
       renderCalendar();
       toast('Removed post from calendar');
@@ -6629,41 +7126,191 @@ Measure the actual bottleneck before rewriting the system.</p>
       switchView('write');
     }
 
-    // ==================== VIEW 7: TEAM ADVOCACY ====================
+    // ==================== VIEW 7: TEAM POSTS (CLEAR 2-STEP FLOW) ====================
+    function buildTeamAngleDraft(member, news) {
+      const clean = (news || '').trim().replace(/\.$/, '');
+      const roleLow = (member.role || '').toLowerCase();
+      if (roleLow.includes('cto') || roleLow.includes('eng') || roleLow.includes('tech')) {
+        return `Building this behind the scenes taught our engineering team a lot:\n\n${clean}.\n\nWe focused on stripping complexity instead of adding flashy layers nobody asked for.\n\nHappy to share technical details if you're building something similar.`;
+      }
+      if (roleLow.includes('growth') || roleLow.includes('market') || roleLow.includes('sales')) {
+        return `A quick update from our growth side that teams kept asking us for:\n\n${clean}.\n\nSeeing real operators use this without extra friction has been the best part of the quarter.\n\nDrop a note if you want to see how we rolled it out.`;
+      }
+      return `Excited to share a real milestone we’ve been working toward:\n\n${clean}.\n\nGrateful to everyone who gave brutally honest feedback along the way — we’re just getting started.`;
+    }
+
+    function renderTeamMemberToggles() {
+      const wrap = document.getElementById('team-member-toggles');
+      const btn = document.getElementById('team-generate-btn');
+      if (!wrap) return;
+      const selectedCount = TEAM_MEMBERS.filter((m) => m.selected).length;
+      if (btn) btn.textContent = `Write ${selectedCount} unique ${selectedCount === 1 ? 'post' : 'posts'} →`;
+
+      wrap.innerHTML = TEAM_MEMBERS.map((m) => {
+        const dp = m.avatar
+          ? `<img src="${m.avatar}" alt="${m.name}" class="w-5 h-5 rounded-full object-cover shrink-0" />`
+          : `<span class="w-5 h-5 rounded-full text-white text-[9px] font-semibold flex items-center justify-center shrink-0" style="background:${m.bg};">${m.initials}</span>`;
+        return `
+          <button type="button" onclick="toggleTeamMemberSelect('${m.id}')" class="px-2.5 py-1 rounded-full text-xs flex items-center gap-1.5 border transition-colors ${m.selected ? 'bg-ink text-paper border-ink font-medium' : 'bg-white text-inkSoft border-rule hover:border-ink'}">
+            ${dp}
+            <span>${m.firstName}</span>
+            <span class="opacity-70 text-[10px]">· ${m.role}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleTeamMemberSelect(id) {
+      const m = TEAM_MEMBERS.find((x) => x.id === id);
+      if (!m) return;
+      m.selected = !m.selected;
+      renderTeamDrafts();
+    }
+
+    function loadTeamPromptExample(key) {
+      const inp = document.getElementById('team-master-input');
+      if (!inp) return;
+      const map = {
+        launch: 'BrandToPost 1.0 launches Nov 25 with unlimited free voice interviews, bespoke LinkedIn visuals, and a free ChatGPT/Claude MCP server at brandtopost.com.',
+        hiring: 'We are hiring a founding product engineer (remote) who cares deeply about clean UX, fast shipping, and talking directly to users.',
+        milestone: 'We just crossed 500 active B2B founders using BrandToPost to turn 2-minute voice notes into weekly LinkedIn posts with zero AI slop.',
+      };
+      inp.value = map[key] || map.launch;
+      adaptForTeam();
+    }
+
+    function addTeamMember(e) {
+      e.preventDefault();
+      const nameEl = document.getElementById('team-new-name');
+      const roleEl = document.getElementById('team-new-role');
+      const name = nameEl.value.trim();
+      const role = roleEl.value.trim();
+      if (!name || !role) return;
+      const news = document.getElementById('team-master-input')?.value || '';
+      const firstName = name.split(' ')[0];
+      const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      const newMember = {
+        id: 'tm-' + Date.now(),
+        name,
+        firstName,
+        role,
+        angle: `${role} perspective`,
+        avatar: '',
+        initials,
+        bg: '#7C2D12',
+        selected: true,
+        sent: false,
+        draft: '',
+      };
+      newMember.draft = buildTeamAngleDraft(newMember, news);
+      TEAM_MEMBERS.push(newMember);
+      nameEl.value = '';
+      roleEl.value = '';
+      closeAllCustomMenus();
+      renderTeamDrafts();
+      toast(`Added ${name} and drafted their LinkedIn post`);
+    }
+
+    function rewriteSingleTeammate(id) {
+      const m = TEAM_MEMBERS.find((x) => x.id === id);
+      if (!m) return;
+      const news = document.getElementById('team-master-input')?.value || '';
+      const altHooks = [
+        `One thing I noticed while working on this:\n\n${news.trim()}\n\nSimple tools win when they respect people's time.`,
+        `Sharing a quick behind-the-scenes win from our team:\n\n${news.trim()}\n\nProud of how fast we shipped this without overcomplicating it.`,
+      ];
+      m.draft = m.draft.startsWith('One thing') ? altHooks[1] : altHooks[0];
+      m.sent = false;
+      renderTeamDrafts();
+      toast(`Rewrote ${m.firstName}'s post with a fresh angle`);
+    }
+
+    function sendPostToTeammate(id) {
+      const m = TEAM_MEMBERS.find((x) => x.id === id);
+      if (!m) return;
+      m.sent = true;
+      const shareUrl = `https://brandtopost.com/approve/${m.firstName.toLowerCase()}-${m.id.slice(-3)}`;
+      copyText(shareUrl, `Sent to ${m.firstName} & copied their 1-click approval link!`);
+      renderTeamDrafts();
+    }
+
+    function copyTeammateDraft(id) {
+      const el = document.getElementById(`team-draft-${id}`);
+      const m = TEAM_MEMBERS.find((x) => x.id === id);
+      copyText(el ? el.innerText.trim() : (m ? m.draft : ''), `Copied ${m ? m.firstName : 'teammate'}'s post!`);
+    }
+
     function renderTeamDrafts() {
+      renderTeamMemberToggles();
       const grid = document.getElementById('team-adapted-grid');
+      if (!grid) return;
       grid.innerHTML = '';
-      TEAM_MEMBERS.forEach((m, idx) => {
-        const card = document.createElement('div');
-        card.className = 'bg-white border border-rule rounded-xl p-4 flex flex-col justify-between gap-3';
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center gap-2.5 pb-3 mb-3 border-b border-rule">
-              <span class="w-8 h-8 rounded-full text-white text-[11px] font-semibold flex items-center justify-center shrink-0" style="background:${m.bg};">${m.initials}</span>
-              <div>
-                <div class="text-xs font-semibold text-ink">${m.name}</div>
-                <div class="text-[11px] text-muted">${m.role} · Individual DNA</div>
+
+      const activeMembers = TEAM_MEMBERS.filter((m) => m.selected);
+      if (!activeMembers.length) {
+        grid.innerHTML = `<div class="col-span-full py-10 text-center text-xs text-muted">Select at least one teammate above to generate their LinkedIn post.</div>`;
+        return;
+      }
+
+      activeMembers.forEach((m) => {
+        const dp = m.avatar
+          ? `<img src="${m.avatar}" alt="${m.name}" class="w-9 h-9 rounded-full object-cover shrink-0 border border-rule" />`
+          : `<span class="w-9 h-9 rounded-full text-white text-xs font-semibold flex items-center justify-center shrink-0" style="background:${m.bg};">${m.initials}</span>`;
+
+        const col = document.createElement('div');
+        col.className = 'pt-4 border-t border-rule flex flex-col justify-between gap-4';
+        col.innerHTML = `
+          <div class="space-y-3.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                ${dp}
+                <div class="min-w-0">
+                  <div class="text-[13.5px] font-semibold text-ink truncate">${m.name}</div>
+                  <div class="text-[11px] text-muted truncate">${m.role} · ${m.angle}</div>
+                </div>
               </div>
+              <span class="text-[11px] font-medium shrink-0 ${m.sent ? 'text-emerald-700' : 'text-muted'}">
+                ${m.sent ? 'Sent ✓' : 'Draft'}
+              </span>
             </div>
-            <p class="text-[13px] text-ink leading-relaxed whitespace-pre-line">${m.draft}</p>
+
+            <div
+              id="team-draft-${m.id}"
+              contenteditable="true"
+              oninput="const tm = TEAM_MEMBERS.find(x => x.id === '${m.id}'); if(tm) tm.draft = this.innerText;"
+              class="text-[13.5px] text-ink leading-[1.55] whitespace-pre-line focus:outline-none bg-white/80 border border-rule/80 focus:border-ink rounded-xl p-4 min-h-[170px]"
+            >${m.draft}</div>
           </div>
-          <div class="space-y-2.5 pt-3 border-t border-rule/80">
-            <div class="p-2.5 rounded-lg bg-paper border border-rule text-[11px]">
-              <span class="font-semibold text-ink">Inline review note:</span>
-              <span class="text-inkSoft"> ${m.comment}</span>
+
+          <div class="flex items-center justify-between gap-2 pt-1 text-xs">
+            <div class="flex items-center gap-3 text-inkSoft">
+              <button type="button" onclick="copyTeammateDraft('${m.id}')" class="hover:text-ink font-medium">Copy</button>
+              <button type="button" onclick="rewriteSingleTeammate('${m.id}')" class="hover:text-ink font-medium">Rewrite</button>
             </div>
-            <div class="flex gap-2">
-              <button type="button" onclick="toast('Dispatched adapted draft to ${m.name} workspace')" class="flex-1 py-1.5 bg-ink hover:bg-cobalt text-paper text-xs font-medium rounded-lg">Send to workspace</button>
-            </div>
+            <button type="button" onclick="sendPostToTeammate('${m.id}')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${m.sent ? 'border border-emerald-200 bg-emerald-50 text-emerald-800' : 'bg-ink hover:bg-cobalt text-paper'}">
+              ${m.sent ? 'Copy link again' : `Send to ${m.firstName}`}
+            </button>
           </div>
         `;
-        grid.appendChild(card);
+        grid.appendChild(col);
       });
     }
 
     function adaptForTeam() {
+      const news = document.getElementById('team-master-input')?.value.trim();
+      if (!news) {
+        toast('Write a short company update first');
+        return;
+      }
+      TEAM_MEMBERS.forEach((m) => {
+        if (m.selected) {
+          m.draft = buildTeamAngleDraft(m, news);
+          m.sent = false;
+        }
+      });
       renderTeamDrafts();
-      toast('Re-adapted company update into 3 distinct employee voices!');
+      const cnt = TEAM_MEMBERS.filter((m) => m.selected).length;
+      toast(`Wrote ${cnt} unique LinkedIn posts — ready to review & send`);
     }
 
     // ==================== VIEW 7: MY BRAIN (7-PAGE PERSONAL OS) ====================
@@ -7052,11 +7699,11 @@ Measure the actual bottleneck before rewriting the system.</p>
     };
 
     const ANALYTICS_POSTS = [
-      { id: 'an-1', hook: 'A 2-minute voice rant booked 6 inbound demos in 7 days.', date: 'Nov 20', format: 'PDF Carousel', voice: 'My own voice', impressions: 24810, likes: 312, comments: 64, outlier: 4.2 },
-      { id: 'an-2', hook: 'We cut two layers of status meetings. Shipping speed doubled.', date: 'Nov 14', format: 'Quote Graphic', voice: 'My own voice', impressions: 18440, likes: 209, comments: 41, outlier: 3.1 },
-      { id: 'an-3', hook: 'Stop rebuilding your homepage before fixing offer clarity.', date: 'Nov 08', format: 'Comparison Card', voice: 'Adam Robinson', impressions: 14920, likes: 164, comments: 28, outlier: 2.5 },
-      { id: 'an-4', hook: 'How we cut a 4-second search query to 180ms in 30 lines.', date: 'Nov 04', format: 'PDF Carousel', voice: 'Justin Welsh', impressions: 11400, likes: 138, comments: 33, outlier: 1.9 },
-      { id: 'an-5', hook: 'Why cutting 5 pricing tiers down to 2 lifted conversion +31%.', date: 'Nov 01', format: 'Comparison Card', voice: 'My own voice', impressions: 9240, likes: 119, comments: 22, outlier: 1.6 },
+      { id: 'an-1', hook: 'A 2-minute voice rant booked 6 inbound demos in 7 days.', date: 'Nov 20', format: 'Multi-Slide PDF', voice: 'My own voice', impressions: 24810, likes: 312, comments: 64, outlier: 4.2 },
+      { id: 'an-2', hook: 'We cut two layers of status meetings. Shipping speed doubled.', date: 'Nov 14', format: 'Single Visual', voice: 'My own voice', impressions: 18440, likes: 209, comments: 41, outlier: 3.1 },
+      { id: 'an-3', hook: 'Stop rebuilding your homepage before fixing offer clarity.', date: 'Nov 08', format: 'Single Visual', voice: 'Adam Robinson', impressions: 14920, likes: 164, comments: 28, outlier: 2.5 },
+      { id: 'an-4', hook: 'How we cut a 4-second search query to 180ms in 30 lines.', date: 'Nov 04', format: 'Multi-Slide PDF', voice: 'Justin Welsh', impressions: 11400, likes: 138, comments: 33, outlier: 1.9 },
+      { id: 'an-5', hook: 'Why cutting 5 pricing tiers down to 2 lifted conversion +31%.', date: 'Nov 01', format: 'Single Visual', voice: 'My own voice', impressions: 9240, likes: 119, comments: 22, outlier: 1.6 },
       { id: 'an-6', hook: 'What 14 untouched ChatGPT drafts taught me about founder content.', date: 'Oct 27', format: 'Text only', voice: 'Lara Acosta', impressions: 5400, likes: 74, comments: 19, outlier: 0.9 },
     ];
 
@@ -7107,6 +7754,12 @@ Measure the actual bottleneck before rewriting the system.</p>
 
     function renderAnalyticsView() {
       const data = ANALYTICS_RANGES[analyticsState.range] || ANALYTICS_RANGES['30d'];
+      const postsList = ANALYTICS_POSTS;
+
+      const subEl = document.getElementById('an-chart-subtitle');
+      if (subEl) {
+        subEl.textContent = 'Daily LinkedIn impressions synced via Zernio · Hover any bar for exact reach';
+      }
 
       // 1. Borderless Hero KPIs
       const kpiStrip = document.getElementById('an-kpi-strip');
@@ -7141,7 +7794,7 @@ Measure the actual bottleneck before rewriting the system.</p>
       // 3. Post-by-Post Table
       const tbody = document.getElementById('an-posts-tbody');
       if (tbody) {
-        const sorted = [...ANALYTICS_POSTS].sort((a, b) => b[analyticsState.sortBy] - a[analyticsState.sortBy]);
+        const sorted = [...postsList].sort((a, b) => b[analyticsState.sortBy] - a[analyticsState.sortBy]);
         tbody.innerHTML = sorted.map((p) => `
           <tr class="hover:bg-surface/40 transition-colors">
             <td class="py-3.5 pr-4 font-medium text-[13px] text-ink max-w-md">${p.hook}</td>
@@ -7178,7 +7831,7 @@ Measure the actual bottleneck before rewriting the system.</p>
       document.querySelectorAll('.mcp-app-btn').forEach((b) => {
         const active = b.dataset.mcpapp === app;
         b.className = active
-          ? 'mcp-app-btn px-3 py-1 rounded-md font-medium bg-ink text-paper'
+          ? 'mcp-app-btn px-3 py-1 rounded-md font-medium bg-white text-ink shadow-sm'
           : 'mcp-app-btn px-3 py-1 rounded-md font-medium text-inkSoft hover:text-ink';
       });
       const wrap = document.getElementById('mcp-setup-steps');
@@ -7186,29 +7839,29 @@ Measure the actual bottleneck before rewriting the system.</p>
 
       if (app === 'claude') {
         wrap.innerHTML = `
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">01 · OPEN CONNECTORS</div><div class="text-ink font-medium mt-1">In Claude Desktop or claude.ai, open <strong>Settings → Connectors → Add custom connector</strong>.</div></div>
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">02 · PASTE MCP URL</div><div class="text-ink font-medium mt-1">Name it <strong>BrandToPost</strong> and paste <code class="font-mono text-xs bg-surface px-1.5 py-0.5 rounded">https://mcp.brandtopost.com/mcp</code>.</div></div>
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">03 · SIGN IN ONCE</div><div class="text-ink font-medium mt-1">Approve the 1-click OAuth popup — Claude immediately reads your My Brain, Brand DNA, and Calendar.</div></div>
-          </div>
+          <ol class="space-y-1.5 text-xs text-inkSoft list-decimal list-inside">
+            <li>In Claude, open <span class="text-ink font-medium">Settings → Connectors → Add custom connector</span>.</li>
+            <li>Name it <span class="text-ink font-medium">BrandToPost</span> and paste the URL above.</li>
+            <li>Sign in once when prompted to link your workspace.</li>
+          </ol>
         `;
       } else if (app === 'chatgpt') {
         wrap.innerHTML = `
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">01 · ENABLE MCP APPS</div><div class="text-ink font-medium mt-1">In ChatGPT, open <strong>Settings → Apps &amp; Connectors → Add MCP Server</strong>.</div></div>
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">02 · PASTE ENDPOINT</div><div class="text-ink font-medium mt-1">Paste <code class="font-mono text-xs bg-surface px-1.5 py-0.5 rounded">https://mcp.brandtopost.com/mcp</code> and pick <strong>OAuth</strong> auth.</div></div>
-            <div><div class="font-mono text-[11px] text-cobalt font-semibold">03 · START DRAFTING</div><div class="text-ink font-medium mt-1">Mention <strong>@BrandToPost</strong> in any chat to draft posts or place safe Planned calendar slots.</div></div>
-          </div>
+          <ol class="space-y-1.5 text-xs text-inkSoft list-decimal list-inside">
+            <li>In ChatGPT, open <span class="text-ink font-medium">Settings → Apps &amp; Connectors → Add MCP Server</span>.</li>
+            <li>Paste the URL above and choose <span class="text-ink font-medium">OAuth</span> sign-in.</li>
+            <li>Mention <span class="text-ink font-medium">@BrandToPost</span> in any chat to draft or plan posts.</li>
+          </ol>
         `;
       } else {
         const cfg = JSON.stringify({ mcpServers: { brandtopost: { url: 'https://mcp.brandtopost.com/mcp' } } }, null, 2);
         wrap.innerHTML = `
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="text-xs text-inkSoft">Drop this into <code class="font-mono text-ink bg-surface px-1.5 py-0.5 rounded">~/.cursor/mcp.json</code> and reload Cursor:</div>
-              <button type="button" onclick='copyText(${JSON.stringify(cfg)}, "Copied Cursor MCP JSON!")' class="text-xs font-medium text-cobalt hover:underline">Copy JSON</button>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs text-inkSoft">
+              <span>Add to <code class="font-mono text-ink">~/.cursor/mcp.json</code> and reload:</span>
+              <button type="button" onclick='copyText(${JSON.stringify(cfg)}, "Copied Cursor config!")' class="text-ink font-medium hover:underline">Copy JSON</button>
             </div>
-            <pre class="p-3.5 rounded-lg bg-white border border-rule font-mono text-xs text-ink overflow-x-auto">${cfg}</pre>
+            <pre class="p-3 rounded-lg bg-white border border-rule font-mono text-[11px] text-ink overflow-x-auto">${cfg}</pre>
           </div>
         `;
       }
